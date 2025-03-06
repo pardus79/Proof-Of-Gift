@@ -1,0 +1,618 @@
+# Copyright (C) 2023 ProofOfGift
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Proof Of Gift 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/proof-of-gift\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2023-09-21T12:00:00+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.7.1\n"
+"X-Domain: proof-of-gift\n"
+
+#. Plugin Name of the plugin
+#: includes/admin/class-pog-admin.php:77
+#: includes/admin/class-pog-admin.php:78
+msgid "Proof Of Gift"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "https://example.com/proof-of-gift"
+msgstr ""
+
+#. Description of the plugin
+msgid "A gift certificate system using cryptographic tokens with optional BTCPay Server integration."
+msgstr ""
+
+#. Author of the plugin
+msgid "Your Name"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://example.com"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:88
+#: includes/admin/class-pog-admin.php:89
+msgid "Generate Tokens"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:97
+#: includes/admin/class-pog-admin.php:98
+msgid "Settings"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:106
+#: includes/admin/class-pog-admin.php:107
+#: includes/admin/class-pog-admin.php:568
+msgid "Verify Token"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:115
+#: includes/admin/class-pog-admin.php:116
+msgid "Help"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:134
+msgid "General Settings"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:140
+msgid "Operational Mode"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:147
+msgid "Satoshi Exchange Rate"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:158
+msgid "BTCPay Server Integration"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:164
+msgid "BTCPay API Key"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:172
+msgid "BTCPay Store ID"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:180
+msgid "BTCPay Server URL"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:188
+msgid "Test Connection"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:203
+msgid "Configure the general settings for the Proof Of Gift plugin."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:221
+msgid "Store Currency Mode"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:224
+msgid "Satoshi Conversion Mode"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:227
+msgid "Direct Satoshi Mode"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:233
+msgid "Tokens are denominated in store currency. Applied directly to cart total before payment."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:239
+msgid "Tokens are denominated in Satoshis. Converted to store currency at current exchange rate and applied to cart total."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:245
+msgid "Tokens are denominated in Satoshis. Applied directly at BTCPay Server payment screen."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:249
+msgid "BTCPay Server plugin is required for this mode. Please install and activate it first."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:256
+msgid "WooCommerce is not active. The plugin will operate in standalone mode with limited functionality."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:290
+msgid "Current rate: 1 Satoshi = %1$s%3$s (Last updated: %2$s)"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:291
+msgid "Leave empty to fetch automatically from CoinGecko API."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:296
+msgid "Refresh Rate"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:307
+msgid "Configure the BTCPay Server integration settings."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:322
+msgid "Enter your BTCPay Server API key."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:339
+msgid "Enter your BTCPay Server store ID."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:356
+msgid "Enter your BTCPay Server URL."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:369
+msgid "Test Connection"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:450
+msgid "Proof Of Gift - Generate Tokens"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:452
+msgid "Single Token"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:456
+#: includes/admin/class-pog-admin.php:480
+msgid "Amount"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:460
+msgid "Generate Token"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:465
+msgid "Generated Token"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:468
+msgid "Copy"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:477
+msgid "Batch Generation"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:485
+msgid "Quantity"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:490
+msgid "Add Denomination"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:498
+msgid "Generate Tokens"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:503
+msgid "Generated Tokens"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:508
+#: includes/admin/class-pog-admin.php:510
+#: includes/admin/class-pog-admin.php:564
+msgid "Token"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:509
+msgid "Amount"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:518
+msgid "Export as CSV"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:521
+msgid "Export as PDF"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:539
+msgid "Proof Of Gift - Settings"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:560
+msgid "Proof Of Gift - Verify Token"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:568
+msgid "Verify Token"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:586
+msgid "Proof Of Gift - Help"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:590
+msgid "About Proof Of Gift"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:592
+msgid "Proof Of Gift is a gift certificate system using cryptographic tokens."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:595
+msgid "Operational Modes"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:596
+msgid "Store Currency Mode"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:598
+msgid "In this mode, tokens are denominated in your store currency. When a customer applies a token at checkout, the token value is deducted from the cart total before payment processing."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:601
+msgid "Satoshi Conversion Mode"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:603
+msgid "In this mode, tokens are denominated in Satoshis (the smallest unit of Bitcoin). When a customer applies a token at checkout, the Satoshi value is converted to your store currency at the current exchange rate and then deducted from the cart total."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:606
+msgid "Direct Satoshi Mode"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:608
+msgid "In this mode, tokens are denominated in Satoshis and applied directly at the BTCPay Server payment screen. This mode requires the BTCPay Server plugin to be installed and configured."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:611
+msgid "Token Structure"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:613
+msgid "Each token consists of three parts separated by hyphens:"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:616
+msgid "Prefix: \"POG\""
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:617
+msgid "Nonce: A random value to ensure uniqueness"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:618
+msgid "Signature: A cryptographic signature that encodes the token value"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:621
+msgid "Security"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:623
+msgid "Tokens are secured using Ed25519 signatures, a modern cryptographic algorithm. Each token is unique and cannot be forged or altered without the private key, which is securely stored in your WordPress database."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:626
+msgid "Need Help?"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:631
+msgid "For more information, please visit the plugin website: %s"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:651
+#: includes/btcpay-integration/class-pog-btcpay-integration.php:326
+msgid "You do not have permission to perform this action."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:658
+#: includes/crypto/class-pog-crypto.php:113
+msgid "Amount must be greater than zero."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:693
+msgid "No denominations specified."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:744
+msgid "No tokens to export."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:781
+msgid "PDF generation is not available. Please install a PDF library."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:813
+msgid "No token provided."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:823
+msgid "Invalid token."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:889
+msgid "Please configure the BTCPay Server settings first."
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:905
+msgid "Error connecting to BTCPay Server: %s"
+msgstr ""
+
+#: includes/admin/class-pog-admin.php:909
+msgid "Connection successful!"
+msgstr ""
+
+#: includes/btcpay-integration/class-pog-btcpay-integration.php:192
+msgid "Token value: %1$d satoshis. Token amount used: %2$d satoshis."
+msgstr ""
+
+#: includes/btcpay-integration/class-pog-btcpay-integration.php:208
+msgid "Redeemed %d token after successful BTCPay Server payment"
+msgid_plural "Redeemed %d tokens after successful BTCPay Server payment"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/btcpay-integration/class-pog-btcpay-integration.php:230
+msgid "Change token generated: %1$s satoshis (%2$s)"
+msgstr ""
+
+#: includes/btcpay-integration/class-pog-btcpay-integration.php:282
+msgid "BTCPay Server is not properly configured."
+msgstr ""
+
+#: includes/btcpay-integration/class-pog-btcpay-integration.php:329
+msgid "BTCPay Server API error: %d"
+msgstr ""
+
+#: includes/btcpay-integration/class-pog-btcpay-integration.php:325
+msgid "The %1$s plugin is configured in Direct Satoshi Mode, but BTCPay Server settings are not properly configured. Please configure your BTCPay Server settings in the %2$s."
+msgstr ""
+
+#: includes/btcpay-integration/class-pog-btcpay-integration.php:326
+msgid "plugin settings"
+msgstr ""
+
+#: includes/btcpay-integration/class-pog-btcpay-integration.php:357
+#: includes/public/class-pog-public.php:372
+msgid "Change Token"
+msgstr ""
+
+#: includes/btcpay-integration/class-pog-btcpay-integration.php:358
+#: includes/btcpay-integration/class-pog-btcpay-integration.php:363
+#: includes/public/class-pog-public.php:373
+#: includes/public/class-pog-public.php:374
+msgid "Amount:"
+msgstr ""
+
+#: includes/btcpay-integration/class-pog-btcpay-integration.php:359
+#: includes/btcpay-integration/class-pog-btcpay-integration.php:364
+#: includes/public/class-pog-public.php:374
+#: includes/public/class-pog-public.php:375
+msgid "Token:"
+msgstr ""
+
+#: includes/crypto/class-pog-crypto.php:43
+msgid "The sodium extension is required for cryptographic operations."
+msgstr ""
+
+#: includes/integrations/class-pog-woocommerce-integration.php:72
+#: includes/integrations/class-pog-woocommerce-integration.php:99
+#: includes/integrations/class-pog-woocommerce-integration.php:120
+msgid "Have a Gift Token?"
+msgstr ""
+
+#: includes/integrations/class-pog-woocommerce-integration.php:79
+#: includes/integrations/class-pog-woocommerce-integration.php:102
+#: includes/integrations/class-pog-woocommerce-integration.php:123
+msgid "Enter your token here"
+msgstr ""
+
+#: includes/integrations/class-pog-woocommerce-integration.php:80
+#: includes/integrations/class-pog-woocommerce-integration.php:102
+#: includes/integrations/class-pog-woocommerce-integration.php:123
+msgid "e.g. POG-abc123-xyz789"
+msgstr ""
+
+#: includes/integrations/class-pog-woocommerce-integration.php:85
+#: includes/integrations/class-pog-woocommerce-integration.php:103
+#: includes/integrations/class-pog-woocommerce-integration.php:124
+msgid "Apply Token"
+msgstr ""
+
+#: includes/integrations/class-pog-woocommerce-integration.php:149
+msgid "Applied Gift Tokens"
+msgstr ""
+
+#: includes/integrations/class-pog-woocommerce-integration.php:157
+msgid "Remove"
+msgstr ""
+
+#: includes/public/class-pog-public.php:54
+#: includes/public/class-pog-public.php:823
+msgid "Invalid token."
+msgstr ""
+
+#: includes/public/class-pog-public.php:55
+#: includes/public/class-pog-public.php:127
+msgid "This token has already been redeemed."
+msgstr ""
+
+#: includes/public/class-pog-public.php:56
+msgid "An error occurred."
+msgstr ""
+
+#: includes/public/class-pog-public.php:175
+msgid "Token applied: %1$s%2$s"
+msgstr ""
+
+#: includes/public/class-pog-public.php:176
+msgid "%d satoshis"
+msgstr ""
+
+#: includes/public/class-pog-public.php:186
+msgid "WooCommerce is required to apply tokens."
+msgstr ""
+
+#: includes/public/class-pog-public.php:322
+msgid "Change token generated: %1$s satoshis (%2$s)"
+msgstr ""
+
+#: includes/shortcodes/class-pog-shortcodes.php:81
+msgid "Apply Token"
+msgstr ""
+
+#: includes/shortcodes/class-pog-shortcodes.php:82
+msgid "Enter your token here"
+msgstr ""
+
+#: includes/shortcodes/class-pog-shortcodes.php:111
+msgid "Verify Gift Token"
+msgstr ""
+
+#: includes/shortcodes/class-pog-shortcodes.php:114
+msgid "Token"
+msgstr ""
+
+#: includes/shortcodes/class-pog-shortcodes.php:117
+msgid "Verify Token"
+msgstr ""
+
+#: includes/shortcodes/class-pog-shortcodes.php:137
+msgid "Invalid Token"
+msgstr ""
+
+#: includes/shortcodes/class-pog-shortcodes.php:138
+msgid "The token you provided is not valid."
+msgstr ""
+
+#: includes/shortcodes/class-pog-shortcodes.php:176
+msgid "Valid Token"
+msgstr ""
+
+#: includes/shortcodes/class-pog-shortcodes.php:178
+msgid "Redeemed Token"
+msgstr ""
+
+#: includes/shortcodes/class-pog-shortcodes.php:180
+msgid "Invalid Token"
+msgstr ""
+
+#: includes/shortcodes/class-pog-shortcodes.php:187
+msgid "Token"
+msgstr ""
+
+#: includes/shortcodes/class-pog-shortcodes.php:192
+msgid "Amount"
+msgstr ""
+
+#: includes/shortcodes/class-pog-shortcodes.php:197
+msgid "Status"
+msgstr ""
+
+#: includes/shortcodes/class-pog-shortcodes.php:201
+msgid "Valid and ready to use"
+msgstr ""
+
+#: includes/shortcodes/class-pog-shortcodes.php:203
+msgid "Already redeemed"
+msgstr ""
+
+#: includes/shortcodes/class-pog-shortcodes.php:219
+msgid "Redeemed on: %s"
+msgstr ""
+
+#: includes/shortcodes/class-pog-shortcodes.php:232
+msgid "Order: #%s"
+msgstr ""
+
+#: includes/shortcodes/class-pog-shortcodes.php:238
+#: includes/shortcodes/class-pog-shortcodes.php:246
+msgid "Order ID: %s"
+msgstr ""
+
+#: includes/shortcodes/class-pog-shortcodes.php:253
+msgid "Invalid"
+msgstr ""
+
+#: includes/shortcodes/class-pog-shortcodes.php:263
+msgid "Apply Token at Checkout"
+msgstr ""
+
+#: templates/token-verification.php:22
+#: templates/token-verification.php:124
+msgid "Token Verification"
+msgstr ""
+
+#: templates/token-verification.php:124
+msgid "Gift Token Verification"
+msgstr ""
+
+#: templates/token-verification.php:125
+msgid "Verify the details of your gift token below."
+msgstr ""
+
+#: templates/token-verification.php:131
+msgid "Invalid Token"
+msgstr ""
+
+#: templates/token-verification.php:132
+msgid "The token you provided is not valid."
+msgstr ""
+
+#: templates/token-verification.php:137
+#: templates/token-verification.php:179
+msgid "Token"
+msgstr ""
+
+#: templates/token-verification.php:156
+msgid "Valid Token"
+msgstr ""
+
+#: templates/token-verification.php:158
+msgid "Redeemed Token"
+msgstr ""
+
+#: templates/token-verification.php:160
+msgid "Invalid Token"
+msgstr ""
+
+#: templates/token-verification.php:167
+msgid "This token is valid and can be used for payment."
+msgstr ""
+
+#: templates/token-verification.php:169
+msgid "This token has already been redeemed and cannot be used again."
+msgstr ""
+
+#: templates/token-verification.php:171
+msgid "This token is not valid and cannot be used for payment."
+msgstr ""
+
+#: templates/token-verification.php:184
+msgid "Amount"
+msgstr ""
+
+#: templates/token-verification.php:206
+msgid "Redeemed On"
+msgstr ""
+
+#: templates/token-verification.php:212
+msgid "Order"
+msgstr ""
+
+#: templates/token-verification.php:239
+msgid "Apply at Checkout"
+msgstr ""
+
+#: templates/token-verification.php:244
+#: templates/token-verification.php:249
+msgid "Return to Home"
+msgstr ""

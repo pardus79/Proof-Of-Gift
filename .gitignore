@@ -1,0 +1,44 @@
+# Composer dependencies
+/vendor/
+composer.phar
+composer.lock
+
+# PHPUnit
+.phpunit.result.cache
+phpunit.xml
+
+# WordPress test environment
+/tmp/
+/wordpress/
+/wp-content/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Node modules (if used in the project)
+/node_modules/
+package-lock.json
+
+# Build artifacts
+/build/
+/dist/
+
+# BTCPay Server plugin (separate repository)
+/btcpay-plugin/
+
+# Test files (exclude from main repository)
+/tests/
+
+# CLAUDE.md (personal development helper)
+CLAUDE.md
+
+# Backup files
+*.bak
+*.fixed

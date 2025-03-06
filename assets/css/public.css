@@ -1,0 +1,135 @@
+/**
+ * Public CSS for the Proof Of Gift plugin.
+ *
+ * @package ProofOfGift
+ */
+
+/* Token field */
+.pog-token-field {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f7f7f7;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.pog-token-field h3 {
+    margin-top: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.pog-token-input {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.pog-token-input input {
+    flex: 1;
+    margin-right: 10px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+#pog-token-message {
+    margin-top: 10px;
+}
+
+.pog-token-success {
+    padding: 10px;
+    background-color: #edfaef;
+    border: 1px solid #c3e6cb;
+    border-radius: 3px;
+    color: #155724;
+}
+
+.pog-token-error {
+    padding: 10px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 3px;
+    color: #721c24;
+}
+
+/* Applied tokens */
+#pog-applied-tokens {
+    margin-top: 15px;
+}
+
+.pog-applied-token {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #e9f9e9;
+    border: 1px solid #c3e6c3;
+    border-radius: 3px;
+}
+
+.pog-token-amount {
+    flex: 1;
+}
+
+.pog-remove-token {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 0 5px;
+}
+
+.pog-remove-token:hover {
+    color: #d63638;
+}
+
+/* Verification page */
+.pog-verify-result {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f7f7f7;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.pog-verify-valid {
+    background-color: #edfaef;
+    border-color: #c3e6cb;
+}
+
+.pog-verify-invalid {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.pog-verify-token-details {
+    margin-top: 15px;
+}
+
+.pog-token-row {
+    display: flex;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.pog-token-label {
+    width: 100px;
+    font-weight: 600;
+}
+
+.pog-token-value {
+    flex: 1;
+}
+
+.pog-token-value code {
+    background-color: #f5f5f5;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+.pog-apply-token {
+    margin-top: 20px;
+}
