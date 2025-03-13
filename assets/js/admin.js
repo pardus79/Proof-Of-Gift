@@ -36,6 +36,8 @@
                     $('#pog-generate-single-token').prop('disabled', false).text('Generate Token');
 
                     if (response.success) {
+                        console.log('Token generation success response:', response.data);
+                        
                         // Display the token
                         $('#pog-single-token-result').text(response.data.token);
                         $('.pog-token-result').show();
@@ -45,6 +47,10 @@
                         var site_url = window.location.origin;
                         var verification_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token);
                         var application_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token) + '&pog_apply=1';
+                        
+                        console.log('Creating URLs:', 
+                            '\nVerification URL:', verification_url,
+                            '\nApplication URL:', application_url);
                         
                         var urlsHtml = '<div id="pog-single-token-urls">' +
                             '<p><strong>Verification URL:</strong><br>' +
@@ -57,6 +63,7 @@
                         '</div>';
                         
                         $('.pog-token-result').append(urlsHtml);
+                        console.log('Added URL HTML to DOM');
                     } else {
                         alert(pog_admin_vars.strings.error + ': ' + response.data.message);
                     }
@@ -349,6 +356,11 @@
                                 var site_url = window.location.origin;
                                 var verification_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token);
                                 var application_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token) + '&pog_apply=1';
+                                
+                                console.log('Token verification success response:', response.data);
+                                console.log('Creating verification URLs:',
+                                    '\nVerification URL:', verification_url,
+                                    '\nApplication URL:', application_url);
                                 
                                 // Verification URL
                                 html += '<p><strong>Verification URL:</strong><br>';
