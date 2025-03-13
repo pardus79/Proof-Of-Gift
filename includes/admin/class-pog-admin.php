@@ -66,6 +66,10 @@ class POG_Admin {
         add_action( 'wp_ajax_pog_download_pdf', array( $this, 'handle_pdf_download' ) );
         add_action( 'wp_ajax_pog_verify_token', array( $this, 'ajax_verify_token' ) );
         add_action( 'wp_ajax_pog_btcpay_test_connection', array( $this, 'ajax_btcpay_test_connection' ) );
+        
+        // Add backup/restore actions
+        add_action( 'admin_init', array( $this, 'handle_data_export' ) );
+        add_action( 'admin_init', array( $this, 'handle_data_import' ) );
     }
 
     /**
@@ -118,6 +122,15 @@ class POG_Admin {
             'manage_proof_of_gift',
             'proof-of-gift-help',
             array( $this, 'render_help_page' )
+        );
+        
+        add_submenu_page(
+            'proof-of-gift',
+            __( 'Backup & Restore', 'proof-of-gift' ),
+            __( 'Backup & Restore', 'proof-of-gift' ),
+            'manage_proof_of_gift',
+            'proof-of-gift-backup',
+            array( $this, 'render_backup_page' )
         );
     }
 
@@ -176,6 +189,14 @@ class POG_Admin {
             'pog_token_name_plural',
             __( 'Token Name (Plural)', 'proof-of-gift' ),
             array( $this, 'render_token_name_plural_field' ),
+            'proof-of-gift-settings',
+            'pog_general_settings'
+        );
+        
+        add_settings_field(
+            'pog_preserve_data_on_uninstall',
+            __( 'Data Preservation', 'proof-of-gift' ),
+            array( $this, 'render_preserve_data_field' ),
             'proof-of-gift-settings',
             'pog_general_settings'
         );
@@ -478,6 +499,26 @@ class POG_Admin {
         <input type="text" name="pog_settings[token_name_plural]" value="<?php echo esc_attr( $token_name_plural ); ?>" class="regular-text" />
         <p class="description">
             <?php esc_html_e( 'Customize the plural name for tokens (e.g., "Reward Points"). Default is "Gift Tokens".', 'proof-of-gift' ); ?>
+        </p>
+        <?php
+    }
+    
+    /**
+     * Render the preserve data on uninstall field.
+     *
+     * @return void
+     */
+    public function render_preserve_data_field() {
+        $settings = get_option( 'pog_settings', array() );
+        $preserve_data = isset( $settings['preserve_data_on_uninstall'] ) ? $settings['preserve_data_on_uninstall'] : false;
+        
+        ?>
+        <label>
+            <input type="checkbox" name="pog_settings[preserve_data_on_uninstall]" value="1" <?php checked( $preserve_data ); ?> />
+            <?php esc_html_e( 'Preserve data when plugin is uninstalled', 'proof-of-gift' ); ?>
+        </label>
+        <p class="description">
+            <?php esc_html_e( 'If checked, cryptographic keys and redeemed tokens will be preserved when the plugin is uninstalled. This is useful for temporary deactivations or migrations.', 'proof-of-gift' ); ?>
         </p>
         <?php
     }
@@ -1652,5 +1693,380 @@ class POG_Admin {
      */
     private function is_btcpay_active() {
         return POG_Utils::is_btcpay_active();
+    }
+    
+    /**
+     * Render backup and restore page.
+     *
+     * @return void
+     */
+    public function render_backup_page() {
+        // Display settings errors
+        settings_errors('pog_import');
+        
+        ?>
+        <div class="wrap">
+            <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+            
+            <div class="pog-admin-section">
+                <h2><?php _e('Export Data', 'proof-of-gift'); ?></h2>
+                <p><?php _e('Export your cryptographic keys, settings, and redeemed tokens for backup or migration.', 'proof-of-gift'); ?></p>
+                
+                <form method="post" action="">
+                    <?php wp_nonce_field('pog_export_data', 'pog_export_nonce'); ?>
+                    
+                    <p>
+                        <label>
+                            <input type="checkbox" name="export_keys" value="1" checked>
+                            <?php _e('Include cryptographic keys (required for token validation)', 'proof-of-gift'); ?>
+                        </label>
+                    </p>
+                    
+                    <p>
+                        <label>
+                            <input type="checkbox" name="export_settings" value="1" checked>
+                            <?php _e('Include plugin settings', 'proof-of-gift'); ?>
+                        </label>
+                    </p>
+                    
+                    <p>
+                        <label>
+                            <input type="checkbox" name="export_redemptions" value="1" checked>
+                            <?php _e('Include redeemed tokens database', 'proof-of-gift'); ?>
+                        </label>
+                    </p>
+                    
+                    <p>
+                        <input type="password" name="export_password" class="regular-text" placeholder="<?php esc_attr_e('Password to encrypt export file (optional)', 'proof-of-gift'); ?>">
+                    </p>
+                    
+                    <p>
+                        <button type="submit" name="pog_do_export" class="button button-primary">
+                            <?php _e('Export Data', 'proof-of-gift'); ?>
+                        </button>
+                    </p>
+                </form>
+            </div>
+            
+            <div class="pog-admin-section">
+                <h2><?php _e('Import Data', 'proof-of-gift'); ?></h2>
+                <p><?php _e('Import previously exported data. This will overwrite your current keys, settings, or redeemed tokens.', 'proof-of-gift'); ?></p>
+                
+                <form method="post" action="" enctype="multipart/form-data">
+                    <?php wp_nonce_field('pog_import_data', 'pog_import_nonce'); ?>
+                    
+                    <p>
+                        <input type="file" name="import_file" accept=".json,.pog">
+                    </p>
+                    
+                    <p>
+                        <label>
+                            <input type="checkbox" name="import_keys" value="1" checked>
+                            <?php _e('Import cryptographic keys', 'proof-of-gift'); ?>
+                        </label>
+                    </p>
+                    
+                    <p>
+                        <label>
+                            <input type="checkbox" name="import_settings" value="1" checked>
+                            <?php _e('Import plugin settings', 'proof-of-gift'); ?>
+                        </label>
+                    </p>
+                    
+                    <p>
+                        <label>
+                            <input type="checkbox" name="import_redemptions" value="1" checked>
+                            <?php _e('Import redeemed tokens database', 'proof-of-gift'); ?>
+                        </label>
+                    </p>
+                    
+                    <p>
+                        <label>
+                            <input type="checkbox" name="replace_redemptions" value="1">
+                            <?php _e('Replace existing redeemed tokens (otherwise new tokens will be added)', 'proof-of-gift'); ?>
+                        </label>
+                    </p>
+                    
+                    <p>
+                        <input type="password" name="import_password" class="regular-text" placeholder="<?php esc_attr_e('Password (if export was encrypted)', 'proof-of-gift'); ?>">
+                    </p>
+                    
+                    <p>
+                        <button type="submit" name="pog_do_import" class="button button-primary">
+                            <?php _e('Import Data', 'proof-of-gift'); ?>
+                        </button>
+                    </p>
+                </form>
+            </div>
+        </div>
+        <?php
+    }
+    
+    /**
+     * Handle data export.
+     *
+     * @return void
+     */
+    public function handle_data_export() {
+        if (!isset($_POST['pog_do_export']) || !check_admin_referer('pog_export_data', 'pog_export_nonce')) {
+            return;
+        }
+        
+        $export_data = array(
+            'plugin' => 'proof-of-gift',
+            'version' => POG_VERSION,
+            'export_date' => current_time('mysql'),
+            'site_url' => site_url(),
+        );
+        
+        // Export keys if selected
+        if (isset($_POST['export_keys']) && $_POST['export_keys']) {
+            $crypto = new \ProofOfGift\POG_Crypto();
+            $export_data['keys'] = array(
+                'public_key' => get_option('pog_public_key'),
+                'private_key' => get_option('pog_private_key'),
+            );
+        }
+        
+        // Export settings if selected
+        if (isset($_POST['export_settings']) && $_POST['export_settings']) {
+            $export_data['settings'] = get_option('pog_settings');
+        }
+        
+        // Export redemptions if selected
+        if (isset($_POST['export_redemptions']) && $_POST['export_redemptions']) {
+            global $wpdb;
+            $table_name = $wpdb->prefix . 'pog_redemptions';
+            $redemptions = $wpdb->get_results("SELECT * FROM $table_name", ARRAY_A);
+            $export_data['redemptions'] = $redemptions;
+        }
+        
+        // Encrypt the export if password provided
+        $json_data = json_encode($export_data);
+        if (!empty($_POST['export_password'])) {
+            $password = sanitize_text_field($_POST['export_password']);
+            $encrypted_data = $this->encrypt_export_data($json_data, $password);
+            $output = $encrypted_data;
+            $file_extension = 'pog';
+        } else {
+            $output = $json_data;
+            $file_extension = 'json';
+        }
+        
+        // Force download
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="pog-backup-' . date('Y-m-d') . '.' . $file_extension . '"');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate');
+        header('Pragma: public');
+        header('Content-Length: ' . strlen($output));
+        echo $output;
+        exit;
+    }
+
+    /**
+     * Encrypt export data with a password.
+     *
+     * @param string $data The data to encrypt
+     * @param string $password The password to use
+     * @return string Encrypted data
+     */
+    private function encrypt_export_data($data, $password) {
+        if (!function_exists('sodium_crypto_secretbox')) {
+            // Fallback for servers without sodium extension
+            return 'plain:' . base64_encode($data);
+        }
+        
+        // Generate a salt for key derivation
+        $salt = random_bytes(SODIUM_CRYPTO_PWHASH_SALTBYTES);
+        
+        // Derive a key from the password
+        $key = sodium_crypto_pwhash(
+            SODIUM_CRYPTO_SECRETBOX_KEYBYTES,
+            $password,
+            $salt,
+            SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE,
+            SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE
+        );
+        
+        // Generate a nonce
+        $nonce = random_bytes(SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
+        
+        // Encrypt the data
+        $encrypted = sodium_crypto_secretbox($data, $nonce, $key);
+        
+        // Combine salt, nonce, and ciphertext
+        $result = $salt . $nonce . $encrypted;
+        
+        // Encode for storage
+        return 'encrypted:' . base64_encode($result);
+    }
+
+    /**
+     * Decrypt import data with a password.
+     *
+     * @param string $encrypted_data The encrypted data
+     * @param string $password The password to use
+     * @return string|false Decrypted data or false on failure
+     */
+    private function decrypt_import_data($encrypted_data, $password) {
+        // Check if the data is plaintext (fallback mode)
+        if (strpos($encrypted_data, 'plain:') === 0) {
+            return base64_decode(substr($encrypted_data, 6));
+        }
+        
+        // Remove the encrypted: prefix
+        if (strpos($encrypted_data, 'encrypted:') !== 0) {
+            return false;
+        }
+        
+        $data = base64_decode(substr($encrypted_data, 10));
+        if ($data === false) {
+            return false;
+        }
+        
+        // Extract salt, nonce, and ciphertext
+        $salt = substr($data, 0, SODIUM_CRYPTO_PWHASH_SALTBYTES);
+        $nonce = substr($data, SODIUM_CRYPTO_PWHASH_SALTBYTES, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
+        $ciphertext = substr($data, SODIUM_CRYPTO_PWHASH_SALTBYTES + SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
+        
+        // Derive the key from the password and salt
+        $key = sodium_crypto_pwhash(
+            SODIUM_CRYPTO_SECRETBOX_KEYBYTES,
+            $password,
+            $salt,
+            SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE,
+            SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE
+        );
+        
+        // Decrypt the data
+        $decrypted = sodium_crypto_secretbox_open($ciphertext, $nonce, $key);
+        if ($decrypted === false) {
+            return false;
+        }
+        
+        return $decrypted;
+    }
+
+    /**
+     * Handle data import.
+     *
+     * @return void
+     */
+    public function handle_data_import() {
+        if (!isset($_POST['pog_do_import']) || !check_admin_referer('pog_import_data', 'pog_import_nonce')) {
+            return;
+        }
+        
+        if (!isset($_FILES['import_file']) || $_FILES['import_file']['error'] !== UPLOAD_ERR_OK) {
+            add_settings_error(
+                'pog_import',
+                'import_error',
+                __('Error uploading file.', 'proof-of-gift'),
+                'error'
+            );
+            return;
+        }
+        
+        $file_content = file_get_contents($_FILES['import_file']['tmp_name']);
+        $file_extension = pathinfo($_FILES['import_file']['name'], PATHINFO_EXTENSION);
+        
+        // Check if encrypted and try to decrypt
+        if (($file_extension === 'pog' || strpos($file_content, 'encrypted:') === 0) && !empty($_POST['import_password'])) {
+            $password = sanitize_text_field($_POST['import_password']);
+            $decrypted = $this->decrypt_import_data($file_content, $password);
+            if ($decrypted === false) {
+                add_settings_error(
+                    'pog_import',
+                    'decrypt_error',
+                    __('Could not decrypt the import file. Wrong password?', 'proof-of-gift'),
+                    'error'
+                );
+                return;
+            }
+            $file_content = $decrypted;
+        } else if (strpos($file_content, 'plain:') === 0) {
+            // Handle plaintext fallback format
+            $file_content = base64_decode(substr($file_content, 6));
+        }
+        
+        // Parse JSON
+        $import_data = json_decode($file_content, true);
+        if (json_last_error() !== JSON_ERROR_NONE || !is_array($import_data)) {
+            add_settings_error(
+                'pog_import',
+                'parse_error',
+                __('Invalid import file format.', 'proof-of-gift'),
+                'error'
+            );
+            return;
+        }
+        
+        // Validate import data
+        if (!isset($import_data['plugin']) || $import_data['plugin'] !== 'proof-of-gift') {
+            add_settings_error(
+                'pog_import',
+                'validation_error',
+                __('This is not a valid Proof of Gift export file.', 'proof-of-gift'),
+                'error'
+            );
+            return;
+        }
+        
+        // Import keys
+        if (isset($import_data['keys']) && isset($_POST['import_keys']) && $_POST['import_keys']) {
+            if (isset($import_data['keys']['public_key'])) {
+                update_option('pog_public_key', $import_data['keys']['public_key']);
+            }
+            if (isset($import_data['keys']['private_key'])) {
+                update_option('pog_private_key', $import_data['keys']['private_key']);
+            }
+        }
+        
+        // Import settings
+        if (isset($import_data['settings']) && isset($_POST['import_settings']) && $_POST['import_settings']) {
+            update_option('pog_settings', $import_data['settings']);
+        }
+        
+        // Import redemptions
+        if (isset($import_data['redemptions']) && is_array($import_data['redemptions']) && 
+            isset($_POST['import_redemptions']) && $_POST['import_redemptions']) {
+            global $wpdb;
+            $table_name = $wpdb->prefix . 'pog_redemptions';
+            
+            // Option to replace existing redemptions
+            if (isset($_POST['replace_redemptions']) && $_POST['replace_redemptions']) {
+                $wpdb->query("TRUNCATE TABLE $table_name");
+            }
+            
+            foreach ($import_data['redemptions'] as $redemption) {
+                // Skip if token already exists to prevent duplicate key errors
+                $exists = $wpdb->get_var($wpdb->prepare(
+                    "SELECT id FROM $table_name WHERE token = %s",
+                    $redemption['token']
+                ));
+                
+                if (!$exists) {
+                    $wpdb->insert(
+                        $table_name,
+                        array(
+                            'token' => $redemption['token'],
+                            'amount' => $redemption['amount'],
+                            'redeemed_at' => $redemption['redeemed_at'],
+                            'order_id' => $redemption['order_id'],
+                            'user_id' => $redemption['user_id']
+                        ),
+                        array('%s', '%d', '%s', '%d', '%d')
+                    );
+                }
+            }
+        }
+        
+        add_settings_error(
+            'pog_import',
+            'import_success',
+            __('Data imported successfully!', 'proof-of-gift'),
+            'success'
+        );
     }
 }

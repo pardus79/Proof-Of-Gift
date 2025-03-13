@@ -116,6 +116,15 @@ Proof Of Gift is a WordPress plugin that implements a cryptographic gift certifi
 
 ## Recent Improvements - March 2025
 
+### Backup & Restore Functionality
+- ✅ Added complete backup and restore system for cryptographic keys and token database
+- ✅ Implemented secure export with password-based encryption using sodium_crypto_secretbox
+- ✅ Created JSON export format with optional password protection
+- ✅ Added import validation with proper error handling
+- ✅ Added option to preserve data during plugin uninstallation
+- ✅ Implemented selective import/export (keys, settings, redemption database)
+- ✅ Created user-friendly backup interface in admin area
+
 ### URL-Based Token Application
 - ✅ Added ability to apply tokens via URLs for easy QR code integration
 - ✅ Created new endpoint `pog-apply/TOKEN` for direct token application

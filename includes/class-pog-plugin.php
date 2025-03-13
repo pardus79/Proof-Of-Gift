@@ -278,20 +278,32 @@ class POG_Plugin {
             exit;
         }
         
-        // Delete options.
-        delete_option( 'pog_private_key' );
-        delete_option( 'pog_public_key' );
-        delete_option( 'pog_settings' );
-        delete_option( 'pog_db_version' );
+        // Check if we should preserve data
+        $settings = get_option('pog_settings', array());
+        $preserve_data = isset($settings['preserve_data_on_uninstall']) && $settings['preserve_data_on_uninstall'];
         
-        // Remove capability from administrator.
-        $role = get_role( 'administrator' );
-        if ( $role ) {
-            $role->remove_cap( 'manage_proof_of_gift' );
+        if ($preserve_data) {
+            // Only remove capability, but keep all data
+            $role = get_role( 'administrator' );
+            if ( $role ) {
+                $role->remove_cap( 'manage_proof_of_gift' );
+            }
+        } else {
+            // Delete options.
+            delete_option( 'pog_private_key' );
+            delete_option( 'pog_public_key' );
+            delete_option( 'pog_settings' );
+            delete_option( 'pog_db_version' );
+            
+            // Remove capability from administrator.
+            $role = get_role( 'administrator' );
+            if ( $role ) {
+                $role->remove_cap( 'manage_proof_of_gift' );
+            }
+            
+            // Drop tables.
+            self::drop_tables();
         }
-        
-        // Drop tables.
-        self::drop_tables();
     }
 
     /**
