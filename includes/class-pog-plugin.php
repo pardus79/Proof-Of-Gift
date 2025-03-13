@@ -144,13 +144,6 @@ class POG_Plugin {
             'top'
         );
         
-        // Apply token URL (automatically adds to cart)
-        add_rewrite_rule(
-            'pog-apply/([^/]+)/?$',
-            'index.php?pog_token=$matches[1]&pog_apply=1',
-            'top'
-        );
-        
         add_filter( 'query_vars', array( $this, 'add_query_vars' ) );
         add_action( 'template_redirect', array( $this, 'handle_token_verification' ) );
     }

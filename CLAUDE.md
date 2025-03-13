@@ -184,9 +184,9 @@ Proof Of Gift is a WordPress plugin that implements a cryptographic gift certifi
 ## IMPORTANT - DO NOT MODIFY THESE CORE IMPLEMENTATION DECISIONS:
 
 1. **Base64 Encoding**: NEVER use hyphens in base64 encoding since they are used as token separators
-   - The `base64url_encode()` function must use 'Aa' instead of '+/' in its character replacement
-   - The encoding must use only alphanumeric characters to prevent URL parsing issues
-   - The corresponding `base64url_decode()` function must expect and handle this specific encoding
+   - The `base64url_encode()` function must use '._' instead of '+/' in its character replacement
+   - The encoding must avoid characters that could cause URL parsing issues
+   - The corresponding `base64url_decode()` function must handle both the original ('._') encoding
 
 2. **Token Format**: Maintain exactly 4-part token structure: PREFIX-NONCE-AMOUNT-SIGNATURE
    - Do not attempt to support tokens with more than 3 separators

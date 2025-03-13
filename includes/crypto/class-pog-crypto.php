@@ -367,15 +367,15 @@ class POG_Crypto {
         // Standard base64 encoding
         $base64 = base64_encode( $data );
         
-        // Convert to alphanumeric characters only
-        // Replace +/ with alternative characters that are alphanumeric
-        $encoded = rtrim(strtr($base64, '+/', 'Aa'), '=');
+        // Convert to URL-safe characters but NEVER use hyphens (as they're token separators)
+        // Use underscore instead of plus, and dot instead of slash - this is the original encoding
+        $encoded = rtrim(strtr($base64, '+/', '._'), '=');
         
         return $encoded;
     }
 
     /**
-     * Decode our custom alphanumeric encoded data.
+     * Decode base64url encoded data.
      *
      * @param string $data The data to decode.
      * @return string|false The decoded data or false on failure.
@@ -386,11 +386,17 @@ class POG_Crypto {
         }
         
         try {
-            // Clean the input, allowing only alphanumeric chars (no hyphens or periods)
-            $cleaned_data = preg_replace('/[^A-Za-z0-9]/', '', $data);
+            // Clean the input, removing any characters that aren't valid in either encoding scheme
+            $cleaned_data = preg_replace('/[^A-Za-z0-9\._]/', '', $data);
             
-            // Convert from our encoding to standard base64
-            $base64 = strtr($cleaned_data, 'Aa', '+/');
+            // Check if data contains dots or underscores (old format) or only alphanumeric (new format)
+            if (strpos($cleaned_data, '.') !== false || strpos($cleaned_data, '_') !== false) {
+                // Old format: using ._ for +/
+                $base64 = strtr($cleaned_data, '._', '+/');
+            } else {
+                // Handle the newer format with 'Aa' replacement if needed in the future
+                $base64 = $cleaned_data;
+            }
             
             // Add padding if necessary
             $padded = str_pad($base64, strlen($cleaned_data) + (4 - strlen($cleaned_data) % 4) % 4, '=');
