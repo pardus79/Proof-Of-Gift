@@ -51,7 +51,7 @@ Proof Of Gift implements a gift certificate system with properties similar to Ch
 1. **General Settings**:
    - Token Prefix: Set a unique prefix for your tokens (default: POG)
    - Token Name: Customize how tokens are referred to in the UI (e.g., "Gift Tokens", "Store Credits")
-   - Generate a new key pair or import an existing one
+   - Data Preservation: Option to preserve data when plugin is uninstalled
 
 2. **Operational Mode**:
    - Store Currency: Tokens denominated in your store's currency
