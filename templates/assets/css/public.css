@@ -1,0 +1,381 @@
+/**
+ * Public CSS for the Proof Of Gift plugin.
+ *
+ * @package ProofOfGift
+ */
+
+/* Token field */
+.pog-token-field {
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #f7f7f7;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.pog-token-field h3 {
+    margin-top: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.pog-token-field h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Checkout token styling */
+.pog-token-field-checkout {
+    margin: 0 0 20px 0;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border: 1px solid #e5e5e5;
+    border-radius: 3px;
+}
+
+/* Make sure checkout order review contains our elements properly */
+.woocommerce-checkout #order_review {
+    position: relative;
+}
+
+/* Additional styling specific to the checkout field */
+.woocommerce-checkout .pog-token-field h4 {
+    margin-top: 0;
+    font-size: 16px;
+}
+
+/* Fix margins on mobile for better spacing */
+@media screen and (max-width: 768px) {
+    .woocommerce-checkout .pog-token-field,
+    .woocommerce-checkout .pog-applied-tokens-container {
+        margin-bottom: 15px;
+    }
+}
+
+.pog-token-input {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.pog-token-input input {
+    flex: 1;
+    margin-right: 10px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+/* Checkout specific styles */
+.woocommerce-checkout .pog-token-input input {
+    font-size: 14px;
+}
+
+.woocommerce-checkout .pog-token-input button {
+    margin-left: 5px;
+}
+
+#pog-token-message,
+.pog-token-message-removal {
+    margin: 10px 0;
+    clear: both;
+}
+
+.pog-token-success {
+    padding: 10px;
+    background-color: #edfaef;
+    border: 1px solid #c3e6cb;
+    border-radius: 3px;
+    color: #155724;
+    font-size: 14px;
+}
+
+.pog-token-error {
+    padding: 10px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 3px;
+    color: #721c24;
+    font-size: 14px;
+}
+
+/* Applied tokens */
+#pog-applied-tokens {
+    margin-top: 15px;
+}
+
+.pog-applied-tokens ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.pog-token-list {
+    margin: 0;
+    padding: 0;
+}
+
+.pog-token-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding: 6px 10px;
+    background-color: #f9f9f9;
+    border-radius: 3px;
+}
+
+.pog-token-item .token-name {
+    flex: 1;
+    font-weight: normal;
+}
+
+.pog-token-item .token-amount {
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.pog-tokens-total {
+    font-size: 1.1em;
+}
+
+.pog-tokens-total-amount {
+    font-weight: bold;
+    color: #0a0;
+}
+
+.pog-tokens-total-amount.negative {
+    color: #0a0;
+}
+
+/* Change token on thank you page */
+.woocommerce-change-token {
+    margin: 2em 0;
+    padding: 1em;
+    background-color: #f8f8f8;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+}
+
+.woocommerce-change-token h2 {
+    margin-top: 0;
+    margin-bottom: 0.5em;
+    font-size: 1.5em;
+}
+
+.woocommerce-change-token p {
+    margin-bottom: 0.5em;
+}
+
+.pog-token-code {
+    display: inline-block;
+    background-color: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    padding: 0.5em;
+    margin: 0.5em 0;
+    font-family: monospace;
+    word-break: break-all;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+.pog-info-message {
+    padding: 10px 15px;
+    margin: 10px 0;
+    background-color: #fffbdd;
+    border: 1px solid #f9e19b;
+    border-radius: 3px;
+    color: #755600;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Position token fields on cart page */
+.woocommerce-cart .pog-token-field {
+    float: right;
+    width: 48%;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f7f7f7;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+/* Position token fields on checkout page - different hook placement */
+.woocommerce-checkout .pog-token-field {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f7f7f7;
+    border-radius: 5px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+/* Applied tokens container on cart page */
+.woocommerce-cart .pog-applied-tokens-container {
+    float: right;
+    width: 48%;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    padding: 15px;
+    box-sizing: border-box;
+    clear: right;
+}
+
+/* Applied tokens container on checkout page - contained in right column */
+.woocommerce-checkout .pog-applied-tokens-container {
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    padding: 15px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+/* Ensure the cart totals are clear after the token fields */
+.woocommerce-cart .cart_totals {
+    clear: right;
+}
+
+/* Ensure proper positioning on checkout page */
+.woocommerce-checkout-review-order {
+    clear: both;
+}
+
+/* Ensure the checkout token fields stay in the right column */
+.woocommerce-checkout #payment + #pog-token-field,
+.woocommerce-checkout #payment + #pog-token-field + .pog-applied-tokens-container {
+    margin-top: 25px;
+}
+
+/* Style the token fee row in cart totals */
+.woocommerce-cart tr.fee th[class*="fee-pins-bucks"],
+.woocommerce-checkout tr.fee th[class*="fee-pins-bucks"],
+.woocommerce-cart tr.fee,
+.woocommerce-checkout tr.fee {
+    color: #0a0; /* Matches the green color used for discounts */
+}
+
+/* Make sure all Pins Bucks fees show properly */
+.woocommerce-cart tr.fee[class*="fee-pins-bucks"] .amount,
+.woocommerce-checkout tr.fee[class*="fee-pins-bucks"] .amount {
+    color: #0a0;
+    font-weight: bold;
+}
+
+/* Hide any truly empty fee rows */
+.woocommerce-cart tr.fee:has(> td:empty),
+.woocommerce-checkout tr.fee:has(> td:empty) {
+    display: none !important;
+}
+
+.pog-applied-tokens-container h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.pog-applied-tokens-list {
+    margin-bottom: 0;
+}
+
+/* Group applied tokens in a clean format */
+.pog-applied-token {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+}
+
+.pog-applied-token:last-child {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+.pog-applied-token .token-info {
+    flex: 1;
+}
+
+.pog-applied-token .token-name {
+    display: block;
+    font-weight: normal;
+}
+
+.pog-applied-token .token-amount {
+    display: block;
+    font-weight: bold;
+    margin-top: 4px;
+}
+
+.pog-applied-token .pog-remove-token {
+    color: #a00;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.pog-applied-token .pog-remove-token:hover {
+    color: #dc3232;
+    text-decoration: underline;
+}
+
+/* Token notification styles */
+.pog-token-notification {
+    margin: 15px 0;
+}
+
+/* Cart token styles handled in .pog-applied-token rules above */
+
+/* Verification page */
+.pog-verify-result {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f7f7f7;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.pog-verify-valid {
+    background-color: #edfaef;
+    border-color: #c3e6cb;
+}
+
+.pog-verify-invalid {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.pog-verify-token-details {
+    margin-top: 15px;
+}
+
+.pog-token-row {
+    display: flex;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.pog-token-label {
+    width: 100px;
+    font-weight: 600;
+}
+
+.pog-token-value {
+    flex: 1;
+}
+
+.pog-token-value code {
+    background-color: #f5f5f5;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+.pog-apply-token {
+    margin-top: 20px;
+}

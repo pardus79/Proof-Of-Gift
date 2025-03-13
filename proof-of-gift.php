@@ -31,6 +31,9 @@ define( 'POG_DB_VERSION', '1.0.0' );
 // Include the autoloader
 require_once POG_PLUGIN_DIR . 'includes/class-pog-autoloader.php';
 
+// Include the utility functions
+require_once POG_PLUGIN_DIR . 'includes/class-pog-utils.php';
+
 // Initialize the autoloader
 \ProofOfGift\POG_Autoloader::register();
 

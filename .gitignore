@@ -42,3 +42,7 @@ CLAUDE.md
 # Backup files
 *.bak
 *.fixed
+
+# Release packages
+/releases/
+/release-zip/
