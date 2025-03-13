@@ -63,18 +63,18 @@ Proof Of Gift implements a gift certificate system with properties similar to Ch
 
 1. Go to Proof Of Gift > Generate Tokens
 2. Enter the denomination amount for the token
-3. Select the token currency (store currency or Satoshis depending on your operational mode)
-4. Click "Generate Token" for a single token, or use Batch Generation for multiple tokens
-5. Copy the generated tokens, application URLs, or export them as CSV
+3. Click "Generate Token" for a single token, or use Batch Generation for multiple tokens
+4. Copy the generated tokens, application URLs, or export them as CSV
+
+The tokens will be denominated in the currency set in your operational mode (store currency or satoshis).
 
 ### Applying Tokens
 
 Tokens can be applied in multiple ways:
 
 1. **URL Application**:
-   - Share a token application URL: `https://your-site.com/pog-apply/TOKEN_CODE`
-   - OR use a query parameter: `https://your-site.com/any-page?pog_token=TOKEN_CODE`
-   - Use these URLs for sharing tokens via email, messages, or creating custom QR codes
+   - Use query parameter format: `https://your-site.com/any-page?pog_token=TOKEN_CODE`
+   - These URLs can be shared via email, messages, or used to create custom QR codes
 
 2. **Checkout Form**:
    - Customers enter the token code in the designated field during checkout
@@ -82,22 +82,19 @@ Tokens can be applied in multiple ways:
 
 ### Verifying Tokens
 
-Use the shortcode `[pog_verify_token]` on any page to add a token verification form, or link directly to the verification URL:
-
-```
-https://your-site.com/pog-verify/TOKEN_CODE
-```
+Tokens are automatically verified when a customer applies them at checkout. Administrators can also verify tokens in the Proof of Gift admin area under the "Verify Token" menu option.
 
 ### Token Management for Admins
 
-1. **View Redeemed Tokens**:
-   - Go to Proof Of Gift > Redeemed Tokens
-   - See all tokens that have been redeemed, along with order details
-
-2. **Batch Generation**:
+1. **Batch Generation**:
    - Go to Proof Of Gift > Generate Tokens > Batch Generation
    - Set quantities and denominations for bulk token creation
    - Export tokens as CSV with token codes and application URLs
+   
+2. **Backup & Restore**:
+   - Go to Proof Of Gift > Backup & Restore
+   - Export cryptographic keys and redeemed token database for safekeeping
+   - Import previously exported data when needed for migrations
 
 ## Understanding the Cryptography
 
@@ -149,10 +146,10 @@ When a customer applies a token worth more than their purchase, the system autom
 
 ## Credits
 
-Developed by [pardus79](https://github.com/pardus79)
+Developed by BtcPins - [pardus79](https://github.com/pardus79)
 
 ## License
 
-This plugin is licensed under the GPL v2 or later.
+This plugin is licensed under The Unlicense.
 
 See [LICENSE](LICENSE) for more information.
