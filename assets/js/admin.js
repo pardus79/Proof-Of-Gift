@@ -43,8 +43,8 @@
                         // Display verification and application URLs
                         if (!$('#pog-single-token-urls').length) {
                             var site_url = window.location.origin;
-                            var verification_url = site_url + '/pog-verify/' + response.data.token;
-                            var application_url = site_url + '/pog-apply/' + response.data.token;
+                            var verification_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token);
+                            var application_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token) + '&pog_apply=1';
                             
                             var urlsHtml = '<div id="pog-single-token-urls">' +
                                 '<p><strong>Verification URL:</strong><br>' +
@@ -152,8 +152,8 @@
                         var html = '';
                         var site_url = window.location.origin;
                         response.data.tokens.forEach(function(token) {
-                            var verification_url = site_url + '/pog-verify/' + token.token;
-                            var application_url = site_url + '/pog-apply/' + token.token;
+                            var verification_url = site_url + '/?pog_token=' + encodeURIComponent(token.token);
+                            var application_url = site_url + '/?pog_token=' + encodeURIComponent(token.token) + '&pog_apply=1';
                             
                             html += '<tr>';
                             html += '<td>' + token.token + '</td>';
@@ -346,16 +346,21 @@
                                 html += '<div class="pog-token-urls">';
                                 html += '<h4>Token URLs</h4>';
                                 
+                                // Create readable verification and application URLs with query params
+                                var site_url = window.location.origin;
+                                var verification_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token);
+                                var application_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token) + '&pog_apply=1';
+                                
                                 // Verification URL
                                 html += '<p><strong>Verification URL:</strong><br>';
-                                html += '<input type="text" readonly class="widefat" value="' + response.data.urls.verification + '" onClick="this.select();" />';
-                                html += '<button type="button" class="button pog-copy-token" data-clipboard-text="' + response.data.urls.verification + '">Copy</button>';
+                                html += '<input type="text" readonly class="widefat" value="' + verification_url + '" onClick="this.select();" />';
+                                html += '<button type="button" class="button pog-copy-token" data-clipboard-text="' + verification_url + '">Copy</button>';
                                 html += '</p>';
                                 
                                 // Application URL
                                 html += '<p><strong>Application URL:</strong><br>';
-                                html += '<input type="text" readonly class="widefat" value="' + response.data.urls.application + '" onClick="this.select();" />';
-                                html += '<button type="button" class="button pog-copy-token" data-clipboard-text="' + response.data.urls.application + '">Copy</button>';
+                                html += '<input type="text" readonly class="widefat" value="' + application_url + '" onClick="this.select();" />';
+                                html += '<button type="button" class="button pog-copy-token" data-clipboard-text="' + application_url + '">Copy</button>';
                                 html += '<span class="description">(Automatically applies token when visited)</span>';
                                 html += '</p>';
                                 

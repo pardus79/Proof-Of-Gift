@@ -256,8 +256,8 @@ class POG_Token_Handler {
         $csv = "Token,Amount,Verification URL,Application URL\n";
         
         foreach ( $tokens as $token_data ) {
-            $verification_url = home_url( 'pog-verify/' . $token_data['token'] );
-            $application_url = home_url( 'pog-apply/' . $token_data['token'] );
+            $verification_url = home_url( '?pog_token=' . urlencode($token_data['token']) );
+            $application_url = home_url( '?pog_token=' . urlencode($token_data['token']) . '&pog_apply=1' );
             
             $csv .= $token_data['token'] . ',' . 
                     $token_data['amount'] . ',' . 
