@@ -130,9 +130,24 @@ class POG_Plugin {
      * @return void
      */
     public function add_rewrite_rules() {
+        // Standard verification URL
         add_rewrite_rule(
             'pog-verify/([^/]+)/?$',
             'index.php?pog_token=$matches[1]',
+            'top'
+        );
+        
+        // Apply token URL (automatically adds to cart)
+        add_rewrite_rule(
+            'pog-apply/([^/]+)/?$',
+            'index.php?pog_token=$matches[1]&pog_apply=1',
+            'top'
+        );
+        
+        // Apply token URL (automatically adds to cart)
+        add_rewrite_rule(
+            'pog-apply/([^/]+)/?$',
+            'index.php?pog_token=$matches[1]&pog_apply=1',
             'top'
         );
         
@@ -148,6 +163,7 @@ class POG_Plugin {
      */
     public function add_query_vars( $vars ) {
         $vars[] = 'pog_token';
+        $vars[] = 'pog_apply';
         return $vars;
     }
 
@@ -158,11 +174,38 @@ class POG_Plugin {
      */
     public function handle_token_verification() {
         $token = get_query_var( 'pog_token' );
+        $apply = get_query_var( 'pog_apply' );
         
         if ( ! empty( $token ) ) {
             $verification = $this->token_handler->verify_token( $token, false );
             
-            // Include the verification template.
+            // If the token is valid and there's an apply parameter, attempt to apply it to cart
+            if ( $verification && $verification['valid'] && $apply === '1' && $this->is_woocommerce_active() ) {
+                // Create a new public handler to apply the token
+                $public = new POG_Public( $this->token_handler );
+                $result = $public->apply_token( $token );
+                
+                // Redirect to cart page if WooCommerce is active
+                if ( $result['success'] ) {
+                    // Add success notice that will show on cart page
+                    wc_add_notice( 
+                        sprintf( 
+                            __( 'Gift token applied: %s', 'proof-of-gift' ), 
+                            $result['message'] 
+                        ), 
+                        'success' 
+                    );
+                    
+                    // Redirect to cart
+                    wp_redirect( wc_get_cart_url() );
+                    exit;
+                } else {
+                    // Add token to URL parameter to still show verification
+                    wc_add_notice( $result['message'], 'error' );
+                }
+            }
+            
+            // Include the verification template
             include POG_PLUGIN_DIR . 'templates/token-verification.php';
             exit;
         }
@@ -174,11 +217,7 @@ class POG_Plugin {
      * @return bool
      */
     private function is_woocommerce_active() {
-        return in_array(
-            'woocommerce/woocommerce.php',
-            apply_filters( 'active_plugins', get_option( 'active_plugins' ) ),
-            true
-        );
+        return POG_Utils::is_woocommerce_active();
     }
 
     /**
@@ -187,11 +226,7 @@ class POG_Plugin {
      * @return bool
      */
     private function is_btcpay_active() {
-        return in_array(
-            'btcpay-greenfield-for-woocommerce/btcpay-greenfield-for-woocommerce.php',
-            apply_filters( 'active_plugins', get_option( 'active_plugins' ) ),
-            true
-        );
+        return POG_Utils::is_btcpay_active();
     }
 
     /**

@@ -36,9 +36,28 @@
                     $('#pog-generate-single-token').prop('disabled', false).text('Generate Token');
 
                     if (response.success) {
-                        // Display the token.
+                        // Display the token
                         $('#pog-single-token-result').text(response.data.token);
                         $('.pog-token-result').show();
+                        
+                        // Display verification and application URLs
+                        if (!$('#pog-single-token-urls').length) {
+                            var site_url = window.location.origin;
+                            var verification_url = site_url + '/pog-verify/' + response.data.token;
+                            var application_url = site_url + '/pog-apply/' + response.data.token;
+                            
+                            var urlsHtml = '<div id="pog-single-token-urls">' +
+                                '<p><strong>Verification URL:</strong><br>' +
+                                '<code>' + verification_url + '</code>' +
+                                '<button type="button" class="button pog-copy-token" data-clipboard-text="' + verification_url + '">Copy</button></p>' +
+                                '<p><strong>Application URL:</strong><br>' + 
+                                '<code>' + application_url + '</code>' +
+                                '<button type="button" class="button pog-copy-token" data-clipboard-text="' + application_url + '">Copy</button>' +
+                                '<small> (Automatically applies token when visited)</small></p>' +
+                            '</div>';
+                            
+                            $('.pog-token-result').append(urlsHtml);
+                        }
                     } else {
                         alert(pog_admin_vars.strings.error + ': ' + response.data.message);
                     }
@@ -131,10 +150,18 @@
                     if (response.success) {
                         // Display the tokens.
                         var html = '';
+                        var site_url = window.location.origin;
                         response.data.tokens.forEach(function(token) {
+                            var verification_url = site_url + '/pog-verify/' + token.token;
+                            var application_url = site_url + '/pog-apply/' + token.token;
+                            
                             html += '<tr>';
                             html += '<td>' + token.token + '</td>';
                             html += '<td>' + token.amount + '</td>';
+                            html += '<td>';
+                            html += '<button type="button" class="button pog-copy-token" data-clipboard-text="' + verification_url + '">Copy Verify URL</button> ';
+                            html += '<button type="button" class="button pog-copy-token" data-clipboard-text="' + application_url + '">Copy Apply URL</button>';
+                            html += '</td>';
                             html += '</tr>';
                         });
 
@@ -313,6 +340,27 @@
                             }
                         } else {
                             html += '<p><strong>Status:</strong> ' + (response.data.valid ? 'Valid' : 'Invalid') + '</p>';
+                            
+                            // Add URLs for valid tokens
+                            if (response.data.valid && response.data.urls) {
+                                html += '<div class="pog-token-urls">';
+                                html += '<h4>Token URLs</h4>';
+                                
+                                // Verification URL
+                                html += '<p><strong>Verification URL:</strong><br>';
+                                html += '<input type="text" readonly class="widefat" value="' + response.data.urls.verification + '" onClick="this.select();" />';
+                                html += '<button type="button" class="button pog-copy-token" data-clipboard-text="' + response.data.urls.verification + '">Copy</button>';
+                                html += '</p>';
+                                
+                                // Application URL
+                                html += '<p><strong>Application URL:</strong><br>';
+                                html += '<input type="text" readonly class="widefat" value="' + response.data.urls.application + '" onClick="this.select();" />';
+                                html += '<button type="button" class="button pog-copy-token" data-clipboard-text="' + response.data.urls.application + '">Copy</button>';
+                                html += '<span class="description">(Automatically applies token when visited)</span>';
+                                html += '</p>';
+                                
+                                html += '</div>';
+                            }
                         }
                         
                         html += '</div>';
@@ -356,6 +404,17 @@
             $(this).prop('disabled', true).text('Testing...');
             $('#pog-btcpay-connection-result').text('');
             
+            // First ensure fields are filled
+            var apiKey = $('input[name="pog_settings[btcpay_api_key]"]').val();
+            var storeId = $('input[name="pog_settings[btcpay_store_id]"]').val();
+            var serverUrl = $('input[name="pog_settings[btcpay_server_url]"]').val();
+            
+            if (!apiKey || !storeId || !serverUrl) {
+                $('#pog-test-btcpay-connection').prop('disabled', false).text('Test Connection');
+                $('#pog-btcpay-connection-result').text('Please fill in all BTCPay Server settings first').css('color', 'red');
+                return;
+            }
+            
             // Send the request.
             $.ajax({
                 url: pog_admin_vars.ajax_url,
@@ -369,15 +428,27 @@
                     $('#pog-test-btcpay-connection').prop('disabled', false).text('Test Connection');
                     
                     if (response.success) {
-                        $('#pog-btcpay-connection-result').text(pog_admin_vars.strings.connection_success).css('color', 'green');
+                        var message = response.data.message;
+                        $('#pog-btcpay-connection-result').html(message).css('color', 'green');
+                        
+                        // If we received exchange rate data in the response, clear the manual rate and update
+                        if (response.data.rate) {
+                            // Only suggest clearing if there's a manual rate
+                            var currentRate = $('input[name="pog_settings[satoshi_exchange_rate]"]').val();
+                            if (currentRate && currentRate.length > 0) {
+                                if (confirm('Connection successful! Would you like to clear the manual exchange rate field to use automatic rates from BTCPay Server?')) {
+                                    $('input[name="pog_settings[satoshi_exchange_rate]"]').val('');
+                                }
+                            }
+                        }
                     } else {
-                        $('#pog-btcpay-connection-result').text(pog_admin_vars.strings.connection_error + ': ' + response.data.message).css('color', 'red');
+                        $('#pog-btcpay-connection-result').html(pog_admin_vars.strings.connection_error + ': ' + response.data.message).css('color', 'red');
                     }
                 },
                 error: function() {
                     // Reset button state.
                     $('#pog-test-btcpay-connection').prop('disabled', false).text('Test Connection');
-                    $('#pog-btcpay-connection-result').text(pog_admin_vars.strings.connection_error).css('color', 'red');
+                    $('#pog-btcpay-connection-result').text(pog_admin_vars.strings.connection_error + ': Server not responding').css('color', 'red');
                 }
             });
         });
@@ -410,13 +481,7 @@
      * Handle exchange rate refresh.
      */
     function handleExchangeRateRefresh() {
-        $('#pog-refresh-exchange-rate').on('click', function() {
-            // Clear the exchange rate field.
-            $('input[name="pog_settings[satoshi_exchange_rate]"]').val('');
-            
-            // Submit the form.
-            $(this).closest('form').submit();
-        });
+        // Removed - exchange rate field is now automatic only
     }
 
     /**

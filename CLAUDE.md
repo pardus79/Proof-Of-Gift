@@ -101,6 +101,13 @@ Proof Of Gift is a WordPress plugin that implements a cryptographic gift certifi
 
 ## Recent Improvements - March 2025
 
+### URL-Based Token Application
+- ✅ Added ability to apply tokens via URLs for easy QR code integration
+- ✅ Created new endpoint `pog-apply/TOKEN` for direct token application
+- ✅ Added URL parameter recognition for `?pog_token=TOKEN` in any page
+- ✅ Enhanced admin interfaces to display and copy token URLs
+- ✅ Included verification and application URLs in CSV exports
+
 ### Direct Satoshi Mode Soft Disable
 - ✅ Temporarily soft-disabled Direct Satoshi Mode which requires additional testing
 - ✅ Used conditional PHP blocks with `if (false)` to hide UI elements
@@ -177,7 +184,8 @@ Proof Of Gift is a WordPress plugin that implements a cryptographic gift certifi
 ## IMPORTANT - DO NOT MODIFY THESE CORE IMPLEMENTATION DECISIONS:
 
 1. **Base64 Encoding**: NEVER use hyphens in base64 encoding since they are used as token separators
-   - The `base64url_encode()` function must use '._' instead of '+/' in its character replacement
+   - The `base64url_encode()` function must use 'Aa' instead of '+/' in its character replacement
+   - The encoding must use only alphanumeric characters to prevent URL parsing issues
    - The corresponding `base64url_decode()` function must expect and handle this specific encoding
 
 2. **Token Format**: Maintain exactly 4-part token structure: PREFIX-NONCE-AMOUNT-SIGNATURE

@@ -234,8 +234,21 @@ class POG_Admin {
         
         // Sanitize token prefix
         if ( isset( $sanitized['token_prefix'] ) ) {
+            // Check if the input contains non-alphanumeric characters
+            $original = $sanitized['token_prefix'];
+            
             // Remove any non-alphanumeric characters
             $sanitized['token_prefix'] = preg_replace( '/[^A-Za-z0-9]/', '', $sanitized['token_prefix'] );
+            
+            // Add warning if characters were removed
+            if ($original !== $sanitized['token_prefix']) {
+                add_settings_error(
+                    'pog_settings',
+                    'token_prefix_sanitized',
+                    __('Token prefix has been sanitized to contain only alphanumeric characters.', 'proof-of-gift'),
+                    'info'
+                );
+            }
             
             // Enforce max length of 10 characters
             $sanitized['token_prefix'] = substr( $sanitized['token_prefix'], 0, 10 );
@@ -674,6 +687,7 @@ class POG_Admin {
                                 <tr>
                                     <th><?php esc_html_e( 'Token', 'proof-of-gift' ); ?></th>
                                     <th><?php esc_html_e( 'Amount', 'proof-of-gift' ); ?></th>
+                                    <th><?php esc_html_e( 'URLs', 'proof-of-gift' ); ?></th>
                                 </tr>
                             </thead>
                             <tbody id="pog-batch-tokens-result"></tbody>
@@ -1232,6 +1246,10 @@ class POG_Admin {
         // Get the operational mode.
         $mode = $this->token_handler->get_operational_mode();
         
+        // Generate verification and application URLs
+        $verification_url = home_url( 'pog-verify/' . $token );
+        $application_url = home_url( 'pog-apply/' . $token );
+        
         // Prepare the response based on the operational mode.
         $response = array(
             'valid'      => $verification['valid'],
@@ -1239,6 +1257,10 @@ class POG_Admin {
             'amount'     => $verification['amount'],
             'redeemed'   => isset( $verification['redeemed'] ) ? $verification['redeemed'] : false,
             'mode'       => $mode,
+            'urls'       => array(
+                'verification' => $verification_url,
+                'application'  => $application_url
+            ),
         );
         
         // If the token has been redeemed, get the redemption data.

@@ -28,6 +28,9 @@ class POG_Public {
      */
     public function __construct( $token_handler ) {
         $this->token_handler = $token_handler;
+        
+        // Add hook to look for token parameter in URL
+        add_action('template_redirect', array($this, 'check_url_for_token'));
     }
 
     /**
@@ -782,6 +785,45 @@ class POG_Public {
                 error_log('Proof Of Gift: Change token generated successfully: ' . $change_token);
             } else {
                 error_log('Proof Of Gift: Error converting change to satoshis: ' . $satoshi_change->get_error_message());
+            }
+        }
+    }
+    
+    /**
+     * Check if a token parameter exists in the URL and apply it.
+     * 
+     * @return void
+     */
+    public function check_url_for_token() {
+        // Check if we have a token parameter in the URL
+        if (isset($_GET['pog_token']) && !empty($_GET['pog_token'])) {
+            $token = sanitize_text_field($_GET['pog_token']);
+            
+            // Only proceed if WooCommerce is active and initialized
+            if (function_exists('WC') && WC()->cart) {
+                // Apply the token to the cart
+                $result = $this->apply_token($token);
+                
+                // Add a notice based on the result
+                if ($result['success']) {
+                    if (function_exists('wc_add_notice')) {
+                        wc_add_notice(
+                            sprintf(
+                                __('Gift token applied: %s', 'proof-of-gift'),
+                                $result['message']
+                            ),
+                            'success'
+                        );
+                    }
+                    
+                    // Redirect to cart to see the applied token
+                    wp_redirect(function_exists('wc_get_cart_url') ? wc_get_cart_url() : home_url());
+                    exit;
+                } else {
+                    if (function_exists('wc_add_notice')) {
+                        wc_add_notice($result['message'], 'error');
+                    }
+                }
             }
         }
     }
