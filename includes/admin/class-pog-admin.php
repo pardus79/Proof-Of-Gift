@@ -848,10 +848,18 @@ class POG_Admin {
             // Generate the token.
             $token = $this->token_handler->create_token( $amount );
             
-            // Return the token.
+            // Generate verification and application URLs
+            $verification_url = home_url( 'pog-verify/' . $token );
+            $application_url = home_url( 'pog-apply/' . $token );
+            
+            // Return the token with URLs.
             wp_send_json_success( array(
                 'token'  => $token,
                 'amount' => $amount,
+                'urls'   => array(
+                    'verification' => $verification_url,
+                    'application'  => $application_url
+                ),
             ) );
         } catch ( \Exception $e ) {
             wp_send_json_error( array( 'message' => $e->getMessage() ) );
@@ -894,9 +902,17 @@ class POG_Admin {
                 $batch_tokens = $this->token_handler->create_tokens_batch( $amount, $quantity );
                 
                 foreach ( $batch_tokens as $token ) {
+                    // Generate verification and application URLs
+                    $verification_url = home_url( 'pog-verify/' . $token );
+                    $application_url = home_url( 'pog-apply/' . $token );
+                    
                     $tokens[] = array(
                         'token'  => $token,
                         'amount' => $amount,
+                        'urls'   => array(
+                            'verification' => $verification_url,
+                            'application'  => $application_url
+                        ),
                     );
                 }
             }
