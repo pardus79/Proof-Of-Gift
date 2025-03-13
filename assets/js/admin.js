@@ -42,31 +42,28 @@
                         $('#pog-single-token-result').text(response.data.token);
                         $('.pog-token-result').show();
                         
-                        // Generate the URLs using query parameters
+                        // Generate the customer URL using query parameters
                         var site_url = window.location.origin;
-                        var verification_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token);
                         var application_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token) + '&pog_apply=1';
                         
-                        console.log('Creating URLs:', 
-                            '\nVerification URL:', verification_url,
-                            '\nApplication URL:', application_url);
+                        console.log('Creating customer application URL:', application_url);
                         
-                        // Update the URL display containers with HTML that includes copy buttons
-                        $('#pog-verification-url').html(
-                            '<code>' + verification_url + '</code>' +
-                            '<button type="button" class="button pog-copy-token" data-clipboard-text="' + 
-                            verification_url + '">Copy</button>'
-                        );
-                        
-                        $('#pog-application-url').html(
-                            '<code>' + application_url + '</code>' +
-                            '<button type="button" class="button pog-copy-token" data-clipboard-text="' + 
-                            application_url + '">Copy</button>' +
-                            '<small> (Automatically applies token when visited)</small>'
-                        );
+                        // Update the URL input field with the application URL
+                        $('#pog-application-url').val(application_url);
                         
                         // Make sure the URL section is visible
-                        $('#pog-token-urls').show();
+                        $('#pog-token-url').show();
+                        
+                        // Re-initialize clipboard for the copy URL button
+                        var urlClipboard = new ClipboardJS('.pog-copy-url');
+                        urlClipboard.on('success', function(e) {
+                            var $button = $(e.trigger);
+                            var originalText = $button.text();
+                            $button.text('Copied!');
+                            setTimeout(function() {
+                                $button.text(originalText);
+                            }, 1500);
+                        });
                         console.log('Updated URL containers in DOM');
                     } else {
                         alert(pog_admin_vars.strings.error + ': ' + response.data.message);
@@ -169,8 +166,8 @@
                             html += '<td>' + token.token + '</td>';
                             html += '<td>' + token.amount + '</td>';
                             html += '<td>';
-                            html += '<button type="button" class="button pog-copy-token" data-clipboard-text="' + verification_url + '">Copy Verify URL</button> ';
-                            html += '<button type="button" class="button pog-copy-token" data-clipboard-text="' + application_url + '">Copy Apply URL</button>';
+                            html += '<input type="text" readonly class="regular-text" value="' + application_url + '" style="width:60%;" onClick="this.select();" /> ';
+                            html += '<button type="button" class="button button-primary pog-copy-token" data-clipboard-text="' + application_url + '">Copy URL</button>';
                             html += '</td>';
                             html += '</tr>';
                         });

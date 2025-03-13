@@ -645,15 +645,20 @@ class POG_Admin {
                     <div class="pog-token-display">
                         <code id="pog-single-token-result"></code>
                         <button type="button" class="button pog-copy-token" data-clipboard-target="#pog-single-token-result">
-                            <?php esc_html_e( 'Copy', 'proof-of-gift' ); ?>
+                            <?php esc_html_e( 'Copy Token', 'proof-of-gift' ); ?>
                         </button>
                     </div>
-                    <div id="pog-token-urls">
-                        <h4><?php esc_html_e( 'Token URLs', 'proof-of-gift' ); ?></h4>
-                        <p><strong><?php esc_html_e( 'Verification URL', 'proof-of-gift' ); ?>:</strong></p>
-                        <div id="pog-verification-url"></div>
-                        <p><strong><?php esc_html_e( 'Application URL', 'proof-of-gift' ); ?>:</strong></p>
-                        <div id="pog-application-url"></div>
+                    
+                    <div id="pog-token-url" style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border: 1px solid #ddd;">
+                        <h4><?php esc_html_e( 'Customer URL', 'proof-of-gift' ); ?></h4>
+                        <p><?php esc_html_e('Share this URL with customers to redeem the gift token:', 'proof-of-gift'); ?></p>
+                        <div style="margin: 10px 0; display: flex; align-items: center;">
+                            <input type="text" id="pog-application-url" readonly style="width: 100%; margin-right: 10px;" onClick="this.select();" />
+                            <button type="button" class="button button-primary pog-copy-url" data-clipboard-target="#pog-application-url">
+                                <?php esc_html_e( 'Copy URL', 'proof-of-gift' ); ?>
+                            </button>
+                        </div>
+                        <p class="description"><?php esc_html_e('When a customer visits this URL, the token will be automatically applied to their cart.', 'proof-of-gift'); ?></p>
                     </div>
                 </div>
             </div>
@@ -694,11 +699,12 @@ class POG_Admin {
                                 <tr>
                                     <th><?php esc_html_e( 'Token', 'proof-of-gift' ); ?></th>
                                     <th><?php esc_html_e( 'Amount', 'proof-of-gift' ); ?></th>
-                                    <th><?php esc_html_e( 'URLs', 'proof-of-gift' ); ?></th>
+                                    <th><?php esc_html_e( 'Customer URL', 'proof-of-gift' ); ?></th>
                                 </tr>
                             </thead>
                             <tbody id="pog-batch-tokens-result"></tbody>
                         </table>
+                        <p class="description"><?php esc_html_e('Customer URLs automatically apply tokens when visited.', 'proof-of-gift'); ?></p>
                     </div>
                     
                     <p>
@@ -758,23 +764,6 @@ class POG_Admin {
                 
                 <div id="pog-verify-result" style="display:none;"></div>
                 
-                <!-- Token Verification Results Template -->
-                <div id="pog-verification-template" style="display:none;">
-                    <div class="pog-verify-details" style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border: 1px solid #ddd;">
-                        <h3 id="pog-verify-status"></h3>
-                        <div id="pog-verify-info"></div>
-                        
-                        <div id="pog-verify-urls" style="margin-top: 15px;">
-                            <h4><?php esc_html_e('Token URLs', 'proof-of-gift'); ?></h4>
-                            
-                            <p><strong><?php esc_html_e('Verification URL', 'proof-of-gift'); ?>:</strong></p>
-                            <div id="pog-verify-url-verification"></div>
-                            
-                            <p><strong><?php esc_html_e('Application URL', 'proof-of-gift'); ?>:</strong></p>
-                            <div id="pog-verify-url-application"></div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
         <?php

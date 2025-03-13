@@ -253,15 +253,13 @@ class POG_Token_Handler {
      * @return string The CSV content.
      */
     public function export_tokens_csv( $tokens ) {
-        $csv = "Token,Amount,Verification URL,Application URL\n";
+        $csv = "Token,Amount,Customer URL\n";
         
         foreach ( $tokens as $token_data ) {
-            $verification_url = home_url( '?pog_token=' . urlencode($token_data['token']) );
             $application_url = home_url( '?pog_token=' . urlencode($token_data['token']) . '&pog_apply=1' );
             
             $csv .= $token_data['token'] . ',' . 
                     $token_data['amount'] . ',' . 
-                    $verification_url . ',' . 
                     $application_url . "\n";
         }
         
