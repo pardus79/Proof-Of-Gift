@@ -11,60 +11,77 @@
      * Handle token application.
      */
     function handleTokenApplication() {
+        // Original token handler (backward compatibility)
         $('#pog-apply-token').on('click', function() {
             var token = $('#pog_token').val();
-
-            if (!token) {
-                alert('Please enter a token.');
-                return;
-            }
-
-            // Show loading state.
-            $(this).prop('disabled', true).text('Applying...');
-            $('#pog-token-message').html('').hide();
-
-            // Send the request.
-            $.ajax({
-                url: pog_public_vars.ajax_url,
-                method: 'POST',
-                data: {
-                    action: 'pog_apply_token_to_cart',
-                    nonce: pog_public_vars.nonce,
-                    token: token
-                },
-                success: function(response) {
-                    // Reset button state.
-                    $('#pog-apply-token').prop('disabled', false).text('Apply Token');
-
-                    if (response.success) {
-                        // Display success message.
-                        $('#pog-token-message').html('<div class="pog-token-success">' + response.data.message + '</div>').show();
-                        
-                        // Clear the token field.
-                        $('#pog_token').val('');
-                        
-                        // Add to applied tokens.
-                        var html = '<div class="pog-applied-token" data-token="' + response.data.token + '">';
-                        html += '<span class="pog-token-amount">' + response.data.message + '</span>';
-                        html += '<button type="button" class="pog-remove-token" data-token="' + response.data.token + '">&times;</button>';
-                        html += '</div>';
-                        
-                        $('#pog-applied-tokens').append(html);
-                        
-                        // Refresh the page to update cart totals.
-                        setTimeout(function() {
-                            window.location.reload();
-                        }, 1000);
-                    } else {
-                        $('#pog-token-message').html('<div class="pog-token-error">' + response.data.message + '</div>').show();
-                    }
-                },
-                error: function() {
-                    // Reset button state.
-                    $('#pog-apply-token').prop('disabled', false).text('Apply Token');
-                    $('#pog-token-message').html('<div class="pog-token-error">' + pog_public_vars.strings.error + '</div>').show();
+            applyTokenToCart(token, $(this), $('#pog-token-message'));
+        });
+        
+        // Cart page token handler
+        $('#pog-apply-token-cart').on('click', function() {
+            var token = $('#pog-token-cart').val();
+            applyTokenToCart(token, $(this), $('#pog-token-message-cart'));
+        });
+        
+        // Checkout page token handler
+        $('#pog-apply-token-checkout').on('click', function() {
+            var token = $('#pog-token-checkout').val();
+            applyTokenToCart(token, $(this), $('#pog-token-message-checkout'));
+        });
+    }
+    
+    /**
+     * Apply a token to the cart via AJAX
+     * 
+     * @param {string} token The token to apply
+     * @param {jQuery} $button The button element
+     * @param {jQuery} $messageContainer The message container
+     */
+    function applyTokenToCart(token, $button, $messageContainer) {
+        if (!token) {
+            alert('Please enter a token.');
+            return;
+        }
+        
+        // Show loading state
+        var originalText = $button.text();
+        $button.prop('disabled', true).text('Applying...');
+        $messageContainer.html('').hide();
+        
+        // Send the request
+        $.ajax({
+            url: pog_public_vars.ajax_url,
+            method: 'POST',
+            data: {
+                action: 'pog_apply_token_to_cart',
+                nonce: pog_public_vars.nonce,
+                token: token
+            },
+            success: function(response) {
+                // Reset button state
+                $button.prop('disabled', false).text(originalText);
+                
+                if (response.success) {
+                    // Clear the token field
+                    $button.closest('.pog-token-input').find('input').val('');
+                    
+                    // Show success message with auto-refresh
+                    var successMsg = '<div class="pog-token-success">' + response.data.message + ' - Updating cart...</div>';
+                    $messageContainer.html(successMsg).show();
+                    
+                    // Automatically reload the page to apply the token to totals
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    $messageContainer.html('<div class="pog-token-error">' + response.data.message + '</div>').show();
                 }
-            });
+            },
+            error: function() {
+                // Reset button state
+                $button.prop('disabled', false).text(originalText);
+                $messageContainer.html('<div class="pog-token-error">' + pog_public_vars.strings.error + '</div>').show();
+            }
         });
     }
 
@@ -72,13 +89,55 @@
      * Handle token removal.
      */
     function handleTokenRemoval() {
-        $(document).on('click', '.pog-remove-token', function() {
-            var token = $(this).data('token');
+        $(document).on('click', '.pog-remove-token', function(e) {
+            e.preventDefault();
             
-            // Remove from the cart.
-            // In a real implementation, this would call an AJAX endpoint.
-            // For now, we'll just refresh the page.
-            window.location.reload();
+            var tokenCode = $(this).data('token');
+            var $removeBtn = $(this);
+            
+            // Disable the button and show loading state
+            $removeBtn.prop('disabled', true).text('Removing...');
+            
+            // Create or get a message container near the button
+            var $messageContainer;
+            var $container = $removeBtn.closest('.pog-applied-tokens-container');
+            
+            // Check if there's already a message container in this context
+            if ($container.find('.pog-token-message-removal').length === 0) {
+                // Create a new message container
+                $messageContainer = $('<div class="pog-token-message-removal"></div>');
+                $container.prepend($messageContainer);
+            } else {
+                $messageContainer = $container.find('.pog-token-message-removal');
+            }
+            
+            // Send AJAX request to remove the token
+            $.ajax({
+                url: pog_public_vars.ajax_url,
+                method: 'POST',
+                data: {
+                    action: 'pog_remove_token_from_cart',
+                    nonce: pog_public_vars.nonce,
+                    token_code: tokenCode
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Show success message in this context
+                        $messageContainer.html('<div class="pog-token-success">' + response.data.message + ' - Updating cart...</div>').show();
+                        
+                        // Force page reload to properly update cart
+                        window.location.reload();
+                    } else {
+                        $removeBtn.prop('disabled', false).text('Remove');
+                        $messageContainer.html('<div class="pog-token-error">' + response.data.message + '</div>').show();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.log("AJAX Error:", status, error, xhr.responseText);
+                    $removeBtn.prop('disabled', false).text('Remove');
+                    $messageContainer.html('<div class="pog-token-error">' + pog_public_vars.strings.error + '</div>').show();
+                }
+            });
         });
     }
 

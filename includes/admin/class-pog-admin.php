@@ -127,7 +127,11 @@ class POG_Admin {
      * @return void
      */
     public function register_settings() {
-        register_setting( 'pog_settings_group', 'pog_settings' );
+        register_setting( 
+            'pog_settings_group', 
+            'pog_settings',
+            array( $this, 'sanitize_settings' )
+        );
         
         add_settings_section(
             'pog_general_settings',
@@ -148,6 +152,30 @@ class POG_Admin {
             'pog_satoshi_exchange_rate',
             __( 'Satoshi Exchange Rate', 'proof-of-gift' ),
             array( $this, 'render_satoshi_exchange_rate_field' ),
+            'proof-of-gift-settings',
+            'pog_general_settings'
+        );
+        
+        add_settings_field(
+            'pog_token_prefix',
+            __( 'Token Prefix', 'proof-of-gift' ),
+            array( $this, 'render_token_prefix_field' ),
+            'proof-of-gift-settings',
+            'pog_general_settings'
+        );
+        
+        add_settings_field(
+            'pog_token_name_singular',
+            __( 'Token Name (Singular)', 'proof-of-gift' ),
+            array( $this, 'render_token_name_singular_field' ),
+            'proof-of-gift-settings',
+            'pog_general_settings'
+        );
+        
+        add_settings_field(
+            'pog_token_name_plural',
+            __( 'Token Name (Plural)', 'proof-of-gift' ),
+            array( $this, 'render_token_name_plural_field' ),
             'proof-of-gift-settings',
             'pog_general_settings'
         );
@@ -194,6 +222,32 @@ class POG_Admin {
             );
         }
     }
+    
+    /**
+     * Sanitize and validate settings.
+     *
+     * @param array $input The settings input.
+     * @return array The sanitized settings.
+     */
+    public function sanitize_settings( $input ) {
+        $sanitized = $input;
+        
+        // Sanitize token prefix
+        if ( isset( $sanitized['token_prefix'] ) ) {
+            // Remove any non-alphanumeric characters
+            $sanitized['token_prefix'] = preg_replace( '/[^A-Za-z0-9]/', '', $sanitized['token_prefix'] );
+            
+            // Enforce max length of 10 characters
+            $sanitized['token_prefix'] = substr( $sanitized['token_prefix'], 0, 10 );
+            
+            // If empty after sanitization, use default
+            if ( empty( $sanitized['token_prefix'] ) ) {
+                $sanitized['token_prefix'] = 'POG';
+            }
+        }
+        
+        return $sanitized;
+    }
 
     /**
      * Render the general settings section.
@@ -224,9 +278,12 @@ class POG_Admin {
             <option value="satoshi_conversion" <?php selected( $mode, 'satoshi_conversion' ); ?>>
                 <?php esc_html_e( 'Satoshi Conversion Mode', 'proof-of-gift' ); ?>
             </option>
+            <?php /* Direct Satoshi Mode temporarily disabled - will be available in a future release */ ?>
+            <?php if (false): // Soft disabled - can be enabled by changing to true ?>
             <option value="direct_satoshi" <?php selected( $mode, 'direct_satoshi' ); ?> <?php disabled( ! $btcpay_active ); ?>>
                 <?php esc_html_e( 'Direct Satoshi Mode', 'proof-of-gift' ); ?>
             </option>
+            <?php endif; ?>
         </select>
         
         <div class="pog-mode-description store-currency-mode" <?php echo 'store_currency' !== $mode ? 'style="display:none;"' : ''; ?>>
@@ -241,6 +298,8 @@ class POG_Admin {
             </p>
         </div>
         
+        <?php /* Direct Satoshi Mode temporarily disabled - will be available in a future release */ ?>
+        <?php if (false): // Soft disabled - can be enabled by changing to true ?>
         <div class="pog-mode-description direct-satoshi-mode" <?php echo 'direct_satoshi' !== $mode ? 'style="display:none;"' : ''; ?>>
             <p class="description">
                 <?php esc_html_e( 'Tokens are denominated in Satoshis. Applied directly at BTCPay Server payment screen.', 'proof-of-gift' ); ?>
@@ -251,6 +310,7 @@ class POG_Admin {
                 </p>
             <?php endif; ?>
         </div>
+        <?php endif; ?>
         
         <?php if ( ! $wc_active ) : ?>
             <p class="description notice">
@@ -267,43 +327,148 @@ class POG_Admin {
      */
     public function render_satoshi_exchange_rate_field() {
         $settings = get_option( 'pog_settings', array() );
-        $exchange_rate = isset( $settings['satoshi_exchange_rate'] ) ? $settings['satoshi_exchange_rate'] : '';
         $last_updated = isset( $settings['satoshi_exchange_rate_updated'] ) ? $settings['satoshi_exchange_rate_updated'] : 0;
         
         $currency = function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : 'USD';
         $symbol = function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '$';
         
+        // Get the operational mode
+        $mode = isset( $settings['operational_mode'] ) ? $settings['operational_mode'] : 'store_currency';
+
+        // Check for BTCPay integration
+        $btcpay_active = $this->is_btcpay_active();
+        
+        // Display information about exchange rates based on current setup
         ?>
-        <input type="text" name="pog_settings[satoshi_exchange_rate]" value="<?php echo esc_attr( $exchange_rate ); ?>" class="regular-text" />
-        <p class="description">
-            <?php
-            if ( $last_updated > 0 ) {
-                $date_format = get_option( 'date_format' );
-                $time_format = get_option( 'time_format' );
-                $date = date_i18n( $date_format . ' ' . $time_format, $last_updated );
-                printf(
-                    /* translators: %1$s: Currency symbol, %2$s: Date and time */
-                    esc_html__( 'Current rate: 1 Satoshi = %1$s%3$s (Last updated: %2$s)', 'proof-of-gift' ),
-                    esc_html( $symbol ),
-                    esc_html( $date ),
-                    esc_html( $exchange_rate )
-                );
-            } else {
-                esc_html_e( 'Leave empty to fetch automatically from CoinGecko API.', 'proof-of-gift' );
-            }
-            ?>
-        </p>
-        <button type="button" class="button" id="pog-refresh-exchange-rate">
-            <?php esc_html_e( 'Refresh Rate', 'proof-of-gift' ); ?>
-        </button>
+        <div class="pog-exchange-rate-info">
+            <?php if ( 'store_currency' === $mode ) : ?>
+                <div class="notice notice-info inline">
+                    <p>
+                        <?php esc_html_e( 'Exchange rate is not needed in Store Currency Mode since tokens are denominated in your store currency.', 'proof-of-gift' ); ?>
+                    </p>
+                </div>
+            <?php elseif ( 'satoshi_conversion' === $mode ) : ?>
+                <div class="notice notice-info inline">
+                    <p>
+                        <strong><?php esc_html_e( 'Satoshi Conversion Mode', 'proof-of-gift' ); ?></strong><br>
+                        <?php 
+                        if ($btcpay_active) {
+                            esc_html_e( 'Exchange rates are automatically fetched from:', 'proof-of-gift' ); 
+                            echo '<ol>';
+                            echo '<li>' . esc_html__( 'BTCPay Server (primary source)', 'proof-of-gift' ) . '</li>';
+                            echo '<li>' . esc_html__( 'CoinGecko API (backup source)', 'proof-of-gift' ) . '</li>';
+                            echo '</ol>';
+                        } else {
+                            esc_html_e( 'Exchange rates are automatically fetched from CoinGecko API.', 'proof-of-gift' ); 
+                        }
+                        ?>
+                    </p>
+                </div>
+            <?php elseif ( 'direct_satoshi' === $mode ) : ?>
+                <?php /* Direct Satoshi Mode temporarily disabled - will be available in a future release */ ?>
+                <?php if (false): // Soft disabled - can be enabled by changing to true ?>
+                <div class="notice notice-info inline">
+                    <p>
+                        <strong><?php esc_html_e( 'Direct Satoshi Mode', 'proof-of-gift' ); ?></strong><br>
+                        <?php esc_html_e( 'In this mode, tokens are applied directly as satoshis at the BTCPay Server payment screen. No conversion is needed.', 'proof-of-gift' ); ?>
+                    </p>
+                </div>
+                <?php else: ?>
+                <div class="notice notice-warning inline">
+                    <p>
+                        <strong><?php esc_html_e( 'Mode Not Available', 'proof-of-gift' ); ?></strong><br>
+                        <?php esc_html_e( 'You are using Direct Satoshi Mode, which is currently disabled. Please select a different operational mode.', 'proof-of-gift' ); ?>
+                    </p>
+                </div>
+                <?php endif; ?>
+            <?php endif; ?>
+            
+            <?php if ( $last_updated > 0 && ($mode === 'satoshi_conversion' || ($btcpay_active && $mode === 'direct_satoshi')) ) : ?>
+                <p>
+                    <?php
+                    $date_format = get_option( 'date_format' );
+                    $time_format = get_option( 'time_format' );
+                    $date = date_i18n( $date_format . ' ' . $time_format, $last_updated );
+                    
+                    // Get current rate from token handler
+                    $crypto = new \ProofOfGift\POG_Crypto();
+                    $token_handler = new \ProofOfGift\POG_Token_Handler($crypto);
+                    $current_rate = $token_handler->get_satoshi_exchange_rate();
+                    
+                    printf(
+                        /* translators: %1$s: Currency symbol, %2$s: Date and time, %3$s: Rate */
+                        esc_html__( 'Current rate: 1 Satoshi = %1$s%3$s (Last updated: %2$s)', 'proof-of-gift' ),
+                        esc_html( $symbol ),
+                        esc_html( $date ),
+                        esc_html( $current_rate )
+                    );
+                    ?>
+                </p>
+            <?php endif; ?>
+            
+            <p class="description">
+                <?php esc_html_e( 'Exchange rates are automatically refreshed every 15 minutes when needed.', 'proof-of-gift' ); ?>
+            </p>
+        </div>
+        
+        <input type="hidden" name="pog_settings[satoshi_exchange_rate]" value="" />
         <?php
     }
-
+    
     /**
-     * Render the BTCPay settings section.
+     * Render the token prefix field.
      *
      * @return void
      */
+    public function render_token_prefix_field() {
+        $settings = get_option( 'pog_settings', array() );
+        $token_prefix = isset( $settings['token_prefix'] ) ? $settings['token_prefix'] : 'POG';
+        
+        ?>
+        <input type="text" name="pog_settings[token_prefix]" value="<?php echo esc_attr( $token_prefix ); ?>" class="regular-text" maxlength="10" pattern="[A-Za-z0-9]+" />
+        <p class="description">
+            <?php esc_html_e( 'Enter the prefix to use for generated tokens. Default is "POG". Use only letters and numbers.', 'proof-of-gift' ); ?>
+        </p>
+        <p class="description">
+            <?php esc_html_e( 'Important: Changing this will affect token verification. Only tokens with the current prefix will be valid.', 'proof-of-gift' ); ?>
+        </p>
+        <?php
+    }
+    
+    /**
+     * Render the token name singular field.
+     *
+     * @return void
+     */
+    public function render_token_name_singular_field() {
+        $settings = get_option( 'pog_settings', array() );
+        $token_name_singular = isset( $settings['token_name_singular'] ) ? $settings['token_name_singular'] : 'Gift Token';
+        
+        ?>
+        <input type="text" name="pog_settings[token_name_singular]" value="<?php echo esc_attr( $token_name_singular ); ?>" class="regular-text" />
+        <p class="description">
+            <?php esc_html_e( 'Customize the singular name for tokens (e.g., "Reward Voucher"). Default is "Gift Token".', 'proof-of-gift' ); ?>
+        </p>
+        <?php
+    }
+    
+    /**
+     * Render the token name plural field.
+     *
+     * @return void
+     */
+    public function render_token_name_plural_field() {
+        $settings = get_option( 'pog_settings', array() );
+        $token_name_plural = isset( $settings['token_name_plural'] ) ? $settings['token_name_plural'] : 'Gift Tokens';
+        
+        ?>
+        <input type="text" name="pog_settings[token_name_plural]" value="<?php echo esc_attr( $token_name_plural ); ?>" class="regular-text" />
+        <p class="description">
+            <?php esc_html_e( 'Customize the plural name for tokens (e.g., "Reward Points"). Default is "Gift Tokens".', 'proof-of-gift' ); ?>
+        </p>
+        <?php
+    }
+
     public function render_btcpay_settings_section() {
         echo '<p>' . esc_html__( 'Configure the BTCPay Server integration settings.', 'proof-of-gift' ) . '</p>';
     }
@@ -613,7 +778,13 @@ class POG_Admin {
                     <?php esc_html_e( 'Each token consists of three parts separated by hyphens:', 'proof-of-gift' ); ?>
                 </p>
                 <ul>
-                    <li><?php esc_html_e( 'Prefix: "POG"', 'proof-of-gift' ); ?></li>
+                    <li><?php 
+                        $crypto = new \ProofOfGift\POG_Crypto();
+                        printf(
+                            esc_html__( 'Prefix: Customizable (currently set to "%s")', 'proof-of-gift' ),
+                            esc_html( $crypto->get_token_prefix() )
+                        ); 
+                    ?></li>
                     <li><?php esc_html_e( 'Nonce: A random value to ensure uniqueness', 'proof-of-gift' ); ?></li>
                     <li><?php esc_html_e( 'Signature: A cryptographic signature that encodes the token value', 'proof-of-gift' ); ?></li>
                 </ul>
@@ -1027,218 +1198,8 @@ class POG_Admin {
         echo $html;
         
         return true;
-        }
-        
-        $transient_id = sanitize_text_field($_GET['token_id']);
-        $tokens = get_transient($transient_id);
-        
-        if (empty($tokens)) {
-            wp_die(__('Token data expired or not found. Please generate new tokens.', 'proof-of-gift'));
-        }
-        
-        // Generate PDF using WordPress's built-in libraries
-        if (!$this->generate_pdf($tokens)) {
-            wp_die(__('Failed to generate PDF.', 'proof-of-gift'));
-        }
-        
-        // Execution ends in generate_pdf with file download
-        exit;
     }
     
-    /**
-     * Generate PDF with token data.
-     *
-     * @param array $tokens The tokens to include in the PDF.
-     * @return bool Whether the PDF was generated and sent.
-     */
-    private function generate_pdf($tokens) {
-        // Get site info for the PDF
-        $site_name = get_bloginfo('name');
-        $site_url = get_bloginfo('url');
-        $date = date_i18n(get_option('date_format'));
-        
-        // Set the operational mode
-        $mode = $this->token_handler->get_operational_mode();
-        $mode_text = '';
-        
-        switch ($mode) {
-            case 'store_currency':
-                $mode_text = __('Store Currency', 'proof-of-gift');
-                $currency_symbol = function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol() : '$';
-                break;
-            case 'satoshi_conversion':
-                $mode_text = __('Satoshi Conversion', 'proof-of-gift');
-                $currency_symbol = 'sats';
-                break;
-            case 'direct_satoshi':
-                $mode_text = __('Direct Satoshi', 'proof-of-gift');
-                $currency_symbol = 'sats';
-                break;
-            default:
-                $mode_text = __('Unknown Mode', 'proof-of-gift');
-                $currency_symbol = '';
-        }
-        
-        // Start output buffering to capture the HTML
-        ob_start();
-        ?>
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-            <title><?php echo esc_html__('Gift Tokens', 'proof-of-gift'); ?></title>
-            <style>
-                body {
-                    font-family: 'Helvetica', Arial, sans-serif;
-                    font-size: 12pt;
-                    color: #333;
-                    line-height: 1.4;
-                }
-                .header {
-                    text-align: center;
-                    margin-bottom: 20px;
-                    padding-bottom: 10px;
-                    border-bottom: 1px solid #ddd;
-                }
-                h1 {
-                    font-size: 24pt;
-                    margin: 0;
-                    padding: 0;
-                    color: #222;
-                }
-                .site-info {
-                    font-size: 10pt;
-                    color: #666;
-                    margin-top: 5px;
-                }
-                .mode-info {
-                    font-size: 12pt;
-                    font-weight: bold;
-                    margin: 10px 0;
-                }
-                .token-table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin: 20px 0;
-                }
-                .token-table th {
-                    background-color: #f5f5f5;
-                    border: 1px solid #ddd;
-                    padding: 8px;
-                    text-align: left;
-                }
-                .token-table td {
-                    border: 1px solid #ddd;
-                    padding: 8px;
-                }
-                .token-code {
-                    font-family: 'Courier New', monospace;
-                    font-size: 11pt;
-                }
-                .token-item {
-                    page-break-inside: avoid;
-                    margin-bottom: 15px;
-                    padding: 10px;
-                    border: 1px solid #ddd;
-                    background-color: #f9f9f9;
-                }
-                .token-value {
-                    font-size: 14pt;
-                    font-weight: bold;
-                }
-                .footer {
-                    text-align: center;
-                    margin-top: 20px;
-                    font-size: 10pt;
-                    color: #999;
-                    border-top: 1px solid #ddd;
-                    padding-top: 10px;
-                }
-                .verification-url {
-                    font-size: 10pt;
-                    color: #666;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <h1><?php echo esc_html__('Gift Tokens', 'proof-of-gift'); ?></h1>
-                <div class="site-info">
-                    <?php echo esc_html($site_name); ?> | <?php echo esc_html($site_url); ?><br>
-                    <?php echo esc_html__('Generated on', 'proof-of-gift'); ?>: <?php echo esc_html($date); ?>
-                </div>
-                <div class="mode-info">
-                    <?php echo esc_html__('Mode', 'proof-of-gift'); ?>: <?php echo esc_html($mode_text); ?>
-                </div>
-            </div>
-            
-            <table class="token-table">
-                <thead>
-                    <tr>
-                        <th><?php echo esc_html__('Token', 'proof-of-gift'); ?></th>
-                        <th><?php echo esc_html__('Value', 'proof-of-gift'); ?></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($tokens as $token_data): ?>
-                    <tr>
-                        <td class="token-code"><?php echo esc_html($token_data['token']); ?></td>
-                        <td class="token-value">
-                            <?php 
-                            if ('store_currency' === $mode) {
-                                echo esc_html($currency_symbol . $token_data['amount']);
-                            } else {
-                                echo esc_html($token_data['amount'] . ' ' . $currency_symbol);
-                            }
-                            ?>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-            
-            <h2><?php echo esc_html__('Individual Tokens', 'proof-of-gift'); ?></h2>
-            
-            <?php foreach ($tokens as $token_data): ?>
-            <div class="token-item">
-                <h3><?php 
-                if ('store_currency' === $mode) {
-                    echo esc_html($currency_symbol . $token_data['amount']);
-                } else {
-                    echo esc_html($token_data['amount'] . ' ' . $currency_symbol);
-                }
-                ?></h3>
-                <div class="token-code"><?php echo esc_html($token_data['token']); ?></div>
-                <div class="verification-url">
-                    <?php echo esc_html__('Verify at', 'proof-of-gift'); ?>: <?php echo esc_html(home_url('/pog-verify/' . $token_data['token'])); ?>
-                </div>
-            </div>
-            <?php endforeach; ?>
-            
-            <div class="footer">
-                <?php echo esc_html__('Generated by Proof Of Gift plugin', 'proof-of-gift'); ?><br>
-                <?php echo esc_html__('Tokens can be verified at', 'proof-of-gift'); ?>: <?php echo esc_html(home_url('/pog-verify/')); ?>
-            </div>
-        </body>
-        </html>
-        <?php
-        $html = ob_get_clean();
-        
-        // Set appropriate headers for PDF download
-        header('Content-Type: application/pdf');
-        header('Content-Disposition: attachment; filename="gift-tokens-' . date('Y-m-d') . '.pdf"');
-        header('Cache-Control: no-cache, no-store, must-revalidate');
-        header('Pragma: no-cache');
-        header('Expires: 0');
-        
-        // Use WordPress's built-in DOMDocument for HTML to PDF conversion through a print-friendly HTML
-        // Since we can't rely on external PDF libraries, we'll serve a print-optimized HTML that browsers
-        // can convert to PDF
-        echo $html;
-        
-        return true;
-    }
-
     /**
      * Ajax handler for verifying a token.
      *
@@ -1263,8 +1224,9 @@ class POG_Admin {
         // Verify the token.
         $verification = $this->token_handler->verify_token( $token );
         
-        if ( false === $verification ) {
-            wp_send_json_error( array( 'message' => __( 'Invalid token.', 'proof-of-gift' ) ) );
+        // Check if verification returned a WP_Error
+        if ( is_wp_error( $verification ) ) {
+            wp_send_json_error( array( 'message' => $verification->get_error_message() ) );
         }
         
         // Get the operational mode.
@@ -1333,25 +1295,132 @@ class POG_Admin {
             wp_send_json_error( array( 'message' => __( 'Please configure the BTCPay Server settings first.', 'proof-of-gift' ) ) );
         }
         
-        // Test the connection to BTCPay Server.
-        $response = wp_remote_get( trailingslashit( $server_url ) . 'api/v1/stores/' . $store_id, array(
+        // Clear any cached version info and rate data
+        delete_transient( 'pog_btcpay_version' );
+        $currency = function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : 'USD';
+        delete_transient( 'pog_btcpay_rate_' . strtolower( $currency ) );
+        
+        // Create a new instance of BTCPay integration
+        $btcpay = new POG_BTCPay_Integration( $this->token_handler );
+        
+        // Try multiple approaches to test the connection
+        
+        // 1. First try server info endpoint (most reliable for v2)
+        $success = false;
+        $message = '';
+        $version_text = 'Unknown';
+        $rate_info = '';
+        
+        $server_url = trailingslashit( $server_url );
+        $server_info_endpoint = $server_url . 'api/v1/server/info';
+        
+        error_log( 'Proof Of Gift: Testing BTCPay connection to: ' . $server_info_endpoint );
+        
+        $server_response = wp_remote_get( $server_info_endpoint, array(
             'headers' => array(
-                'Content-Type' => 'application/json',
                 'Authorization' => 'token ' . $api_key,
+                'Content-Type' => 'application/json'
             ),
+            'timeout' => 15,
+            'sslverify' => apply_filters( 'pog_btcpay_sslverify', true )
         ) );
         
-        if ( is_wp_error( $response ) ) {
-            wp_send_json_error( array( 'message' => $response->get_error_message() ) );
+        if ( ! is_wp_error( $server_response ) ) {
+            $status_code = wp_remote_retrieve_response_code( $server_response );
+            
+            if ( $status_code === 200 ) {
+                // This means we have a successful connection
+                $success = true;
+                $data = json_decode( wp_remote_retrieve_body( $server_response ), true );
+                
+                if ( isset( $data['version'] ) ) {
+                    $is_v2 = version_compare( $data['version'], '2.0.0', '>=' );
+                    $version_text = $is_v2 ? 'BTCPay Server 2.0+' : 'BTCPay Server 1.x';
+                    $message = sprintf( __( 'Connection successful! %s detected.', 'proof-of-gift' ), $version_text );
+                } else {
+                    $message = __( 'Connection successful! BTCPay Server detected, but version could not be determined.', 'proof-of-gift' );
+                }
+            } elseif ( $status_code === 401 ) {
+                // Authentication failed
+                wp_send_json_error( array( 'message' => __( 'Authentication failed: Invalid API key.', 'proof-of-gift' ) ) );
+                return;
+            } else {
+                // Try alternative method - check store endpoint directly
+                $store_endpoint = $server_url . 'api/v1/stores/' . $store_id;
+                
+                error_log( 'Proof Of Gift: Testing BTCPay store endpoint: ' . $store_endpoint );
+                
+                $store_response = wp_remote_get( $store_endpoint, array(
+                    'headers' => array(
+                        'Authorization' => 'token ' . $api_key,
+                        'Content-Type' => 'application/json'
+                    ),
+                    'timeout' => 15
+                ) );
+                
+                if ( ! is_wp_error( $store_response ) && wp_remote_retrieve_response_code( $store_response ) === 200 ) {
+                    // Store exists and we can access it
+                    $success = true;
+                    
+                    // Now try to detect version
+                    $version = $btcpay->detect_btcpay_version();
+                    $version_text = $btcpay->get_version_status();
+                    
+                    $message = sprintf( __( 'Connected to BTCPay Server successfully! %s', 'proof-of-gift' ), $version_text );
+                } else {
+                    // Try one last method - direct rates endpoint (common in v1)
+                    $rates_endpoint = $server_url . 'api/rates/BTC/USD';
+                    
+                    error_log( 'Proof Of Gift: Testing BTCPay rates endpoint: ' . $rates_endpoint );
+                    
+                    $rates_response = wp_remote_get( $rates_endpoint, array( 'timeout' => 10 ) );
+                    
+                    if ( ! is_wp_error( $rates_response ) && wp_remote_retrieve_response_code( $rates_response ) === 200 ) {
+                        $success = true;
+                        $version_text = 'BTCPay Server 1.x';
+                        $message = sprintf( __( 'Connected to BTCPay Server successfully! %s detected via rates endpoint.', 'proof-of-gift' ), $version_text );
+                    } else {
+                        // All tests failed
+                        $error_details = is_wp_error( $store_response ) ? 
+                            $store_response->get_error_message() : 
+                            'HTTP ' . wp_remote_retrieve_response_code( $store_response );
+                            
+                        wp_send_json_error( array( 
+                            'message' => sprintf( 
+                                __( 'Could not connect to store %s: %s', 'proof-of-gift' ), 
+                                $store_id, 
+                                $error_details 
+                            ) 
+                        ) );
+                        return;
+                    }
+                }
+            }
+        } else {
+            // Connection error
+            wp_send_json_error( array( 'message' => __( 'Connection error: ', 'proof-of-gift' ) . $server_response->get_error_message() ) );
+            return;
         }
         
-        $status_code = wp_remote_retrieve_response_code( $response );
+        // If we get here, we have a successful connection
         
-        if ( 200 !== $status_code ) {
-            wp_send_json_error( array( 'message' => sprintf( __( 'Error connecting to BTCPay Server: %s', 'proof-of-gift' ), $status_code ) ) );
+        // Try to get current exchange rate as well
+        $exchange_rate = $btcpay->get_btcpay_exchange_rate( $currency );
+        
+        if ( $exchange_rate ) {
+            $rate_info = sprintf( 
+                __( ' Current rate: 1 satoshi = %1$s %2$s', 'proof-of-gift' ),
+                $exchange_rate,
+                $currency
+            );
         }
         
-        wp_send_json_success( array( 'message' => __( 'Connection successful!', 'proof-of-gift' ) ) );
+        wp_send_json_success( array( 
+            'message' => $message . $rate_info,
+            'version' => $version_text,
+            'rate' => $exchange_rate,
+            'currency' => $currency
+        ) );
     }
 
     /**
@@ -1360,11 +1429,7 @@ class POG_Admin {
      * @return bool
      */
     private function is_woocommerce_active() {
-        return in_array(
-            'woocommerce/woocommerce.php',
-            apply_filters( 'active_plugins', get_option( 'active_plugins' ) ),
-            true
-        );
+        return POG_Utils::is_woocommerce_active();
     }
 
     /**
@@ -1373,10 +1438,6 @@ class POG_Admin {
      * @return bool
      */
     private function is_btcpay_active() {
-        return in_array(
-            'btcpay-greenfield-for-woocommerce/btcpay-greenfield-for-woocommerce.php',
-            apply_filters( 'active_plugins', get_option( 'active_plugins' ) ),
-            true
-        );
+        return POG_Utils::is_btcpay_active();
     }
 }
