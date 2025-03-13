@@ -176,6 +176,8 @@ class POG_Plugin {
             if ( $verification && $verification['valid'] && $apply === '1' && $this->is_woocommerce_active() ) {
                 // Create a new public handler to apply the token
                 $public = new POG_Public( $this->token_handler );
+                
+                error_log('Proof Of Gift: Pretty URL token detected, attempting to apply: ' . $token);
                 $result = $public->apply_token( $token );
                 
                 // Redirect to cart page if WooCommerce is active
@@ -189,9 +191,19 @@ class POG_Plugin {
                         'success' 
                     );
                     
-                    // Redirect to cart
-                    wp_redirect( wc_get_cart_url() );
-                    exit;
+                    // Ensure WooCommerce integration applies the token fees
+                    if (class_exists('\ProofOfGift\POG_WooCommerce_Integration')) {
+                        $wc_integration = new POG_WooCommerce_Integration($this->token_handler);
+                        
+                        // Use the dedicated method for complete cart recalculation
+                        $wc_integration->force_cart_recalculation(WC()->cart);
+                        
+                        error_log('Proof Of Gift: Cart totals forcefully recalculated after pretty URL token application');
+                    }
+                    
+                    // Let the user continue shopping - no redirect
+                    // Still show the verification page for information
+                    // Fall through to the template inclusion
                 } else {
                     // Add token to URL parameter to still show verification
                     wc_add_notice( $result['message'], 'error' );

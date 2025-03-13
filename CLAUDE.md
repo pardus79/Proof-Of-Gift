@@ -65,6 +65,14 @@ Proof Of Gift is a WordPress plugin that implements a cryptographic gift certifi
 - ✅ Enhanced token display to show values in the plugin's native currency (Sats for satoshi modes)
 - ✅ Added a total tokens value section to summarize all applied discounts
 - ✅ Implemented better error handling with detailed logging throughout token application flow
+- ✅ Added no-redirect behavior for URL-based tokens so customers can continue shopping
+
+### URL-Based Token Application
+- ✅ Added reliable token URL generation utility for both admin and customers
+- ✅ Added URL parameter support for applying tokens with `?pog_token=` parameter
+- ✅ Enhanced token redemption emails to include clickable application URLs
+- ✅ Improved verification page with better UI and "Continue Shopping" options
+- ✅ Added token links in order confirmation emails and thank you pages
 
 ### BTCPay Server Integration Enhancement
 - ✅ Improved BTCPay Server connection testing with better error handling
@@ -98,6 +106,13 @@ Proof Of Gift is a WordPress plugin that implements a cryptographic gift certifi
 - Limit string replacements to 100 lines or less for better reliability
 - For complex token parsing, handle different formats in separate helper methods
 - Consider adding test cases for unusual token formats to verify backward compatibility
+
+## Terminology
+- Always use the token name plural form (configurable in plugin settings) in all public-facing areas
+- All text references to "token" in public interfaces should use the setting-based name
+- Admin interfaces may still use "token" terminology for consistency with developer documentation
+- Error messages and notifications consistently use the plural form of the custom token name
+- Default token name is "Gift Tokens" but can be configured in plugin settings
 
 ## Recent Improvements - March 2025
 

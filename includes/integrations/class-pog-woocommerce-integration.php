@@ -184,9 +184,10 @@ class POG_WooCommerce_Integration {
         $has_tokens = false;
         
         // Start the container
+        $token_name_plural = \ProofOfGift\POG_Utils::get_token_name_plural();
         ?>
         <div class="pog-applied-tokens-container">
-            <h3><?php esc_html_e('Applied Tokens', 'proof-of-gift'); ?></h3>
+            <h3><?php echo sprintf(esc_html__('Applied %s', 'proof-of-gift'), $token_name_plural); ?></h3>
             <div class="pog-applied-tokens-list">
         <?php
         // Display all token fees
@@ -444,8 +445,9 @@ class POG_WooCommerce_Integration {
         $token_code = isset($_POST['token_code']) ? sanitize_text_field(wp_unslash($_POST['token_code'])) : '';
         
         if (empty($token_code)) {
+            $token_name_plural = \ProofOfGift\POG_Utils::get_token_name_plural();
             wp_send_json_error(array(
-                'message' => __('Invalid token code.', 'proof-of-gift')
+                'message' => sprintf(__('Invalid %s code.', 'proof-of-gift'), strtolower($token_name_plural))
             ));
             wp_die();
         }
@@ -470,16 +472,18 @@ class POG_WooCommerce_Integration {
             WC()->session->set('pog_tokens', $new_tokens);
             
             if ($removed) {
-                // Force cart recalculation
-                WC()->cart->calculate_totals();
+                // Force cart recalculation using our dedicated method
+                $this->force_cart_recalculation(WC()->cart);
                 
+                $token_name_plural = \ProofOfGift\POG_Utils::get_token_name_plural();
                 wp_send_json_success(array(
-                    'message' => __('Token removed successfully.', 'proof-of-gift'),
+                    'message' => sprintf(__('%s removed successfully.', 'proof-of-gift'), $token_name_plural),
                     'token_code' => $token_code
                 ));
             } else {
+                $token_name_plural = \ProofOfGift\POG_Utils::get_token_name_plural();
                 wp_send_json_error(array(
-                    'message' => __('Token not found.', 'proof-of-gift')
+                    'message' => sprintf(__('%s not found.', 'proof-of-gift'), $token_name_plural)
                 ));
             }
             
@@ -505,16 +509,18 @@ class POG_WooCommerce_Integration {
             // Update session with removed fees
             WC()->session->set('pog_removed_fees', $removed_fees);
             
-            // Force cart recalculation
-            WC()->cart->calculate_totals();
+            // Force cart recalculation using our dedicated method
+            $this->force_cart_recalculation(WC()->cart);
             
+            $token_name_plural = \ProofOfGift\POG_Utils::get_token_name_plural();
             wp_send_json_success(array(
-                'message' => __('Token removed successfully.', 'proof-of-gift'),
+                'message' => sprintf(__('%s removed successfully.', 'proof-of-gift'), $token_name_plural),
                 'token_code' => $token_code
             ));
         } else {
+            $token_name_plural = \ProofOfGift\POG_Utils::get_token_name_plural();
             wp_send_json_error(array(
-                'message' => __('Token not found.', 'proof-of-gift')
+                'message' => sprintf(__('%s not found.', 'proof-of-gift'), $token_name_plural)
             ));
         }
         
@@ -818,10 +824,38 @@ class POG_WooCommerce_Integration {
     }
     
     /**
+     * Force a complete cart recalculation, including all token fees
+     * This is a public method that can be called from other classes
+     *
+     * @param \WC_Cart $cart Optional cart object (uses WC()->cart if not provided)
+     * @return void
+     */
+    public function force_cart_recalculation($cart = null) {
+        if (!$cart && function_exists('WC') && isset(WC()->cart)) {
+            $cart = WC()->cart;
+        }
+        
+        if (!$cart) {
+            error_log('Proof Of Gift: Cannot force cart recalculation - cart object not available');
+            return;
+        }
+        
+        error_log('Proof Of Gift: Force cart recalculation started');
+        
+        // First apply stored token fees
+        $this->apply_stored_token_fees($cart);
+        
+        // Then force a cart calculation
+        $cart->calculate_totals();
+        
+        error_log('Proof Of Gift: Force cart recalculation complete. Cart total: ' . $cart->get_total());
+    }
+
+    /**
      * Apply stored token fees to the cart during cart calculation
      * This is the key function that ensures fees are applied on every page load
      *
-     * @param WC_Cart $cart The cart object
+     * @param \WC_Cart $cart The cart object
      * @return void
      */
     public function apply_stored_token_fees($cart) {
@@ -952,6 +986,16 @@ class POG_WooCommerce_Integration {
                 <strong><?php esc_html_e('Token:', 'proof-of-gift'); ?></strong><br>
                 <code class="pog-token-code"><?php echo esc_html($change_token); ?></code>
             </p>
+            <?php
+            // Generate application URL
+            $site_url = get_site_url();
+            $application_url = $site_url . '/?pog_token=' . urlencode($change_token) . '&pog_apply=1';
+            ?>
+            <p>
+                <strong><?php esc_html_e('Redemption URL:', 'proof-of-gift'); ?></strong><br>
+                <a href="<?php echo esc_url($application_url); ?>"><?php echo esc_html($application_url); ?></a>
+            </p>
+            <p><em><?php esc_html_e('Click the link above to automatically apply this token to your cart.', 'proof-of-gift'); ?></em></p>
         </div>
         <?php
     }

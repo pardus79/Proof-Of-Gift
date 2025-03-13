@@ -47,6 +47,9 @@ class POG_Public {
             true
         );
 
+        // Get token names from settings for consistent messaging
+        $token_name_plural = \ProofOfGift\POG_Utils::get_token_name_plural();
+        
         wp_localize_script(
             'pog-public',
             'pog_public_vars',
@@ -54,9 +57,13 @@ class POG_Public {
                 'ajax_url' => admin_url( 'admin-ajax.php' ),
                 'nonce'    => wp_create_nonce( 'pog_public_nonce' ),
                 'strings'  => array(
-                    'token_invalid'  => __( 'Invalid token.', 'proof-of-gift' ),
-                    'token_redeemed' => __( 'This token has already been redeemed.', 'proof-of-gift' ),
+                    'token_invalid'  => sprintf( __( 'Invalid %s.', 'proof-of-gift' ), $token_name_plural ),
+                    'token_redeemed' => sprintf( __( 'These %s have already been redeemed.', 'proof-of-gift' ), $token_name_plural ),
                     'error'          => __( 'An error occurred.', 'proof-of-gift' ),
+                ),
+                'token_name' => array(
+                    'singular' => \ProofOfGift\POG_Utils::get_token_name_singular(),
+                    'plural'   => $token_name_plural,
                 ),
             )
         );
@@ -222,9 +229,16 @@ class POG_Public {
                         WC()->cart->add_fee($token_label, -$amount, false);
                         error_log('Proof Of Gift: Added fee to cart with label: ' . $token_label . ', amount: -' . $amount);
                         
-                        // Force cart recalculation
-                        WC()->cart->calculate_totals();
-                        error_log('Proof Of Gift: Cart totals recalculated. Cart total: ' . WC()->cart->get_total());
+                        // Use our dedicated method to ensure everything is recalculated properly
+                        if (class_exists('\ProofOfGift\POG_WooCommerce_Integration')) {
+                            $wc_integration = new \ProofOfGift\POG_WooCommerce_Integration($this->token_handler);
+                            $wc_integration->force_cart_recalculation(WC()->cart);
+                            error_log('Proof Of Gift: Cart completely recalculated via force_cart_recalculation');
+                        } else {
+                            // Fallback if integration class isn't available
+                            WC()->cart->calculate_totals();
+                            error_log('Proof Of Gift: Cart totals recalculated via fallback method. Cart total: ' . WC()->cart->get_total());
+                        }
                     } catch (\Exception $e) {
                         error_log('Proof Of Gift: Exception applying token as fee: ' . $e->getMessage());
                     }
@@ -801,6 +815,8 @@ class POG_Public {
             
             // Only proceed if WooCommerce is active and initialized
             if (function_exists('WC') && WC()->cart) {
+                error_log('Proof Of Gift: URL token detected, attempting to apply: ' . $token);
+                
                 // Apply the token to the cart
                 $result = $this->apply_token($token);
                 
@@ -816,9 +832,19 @@ class POG_Public {
                         );
                     }
                     
-                    // Redirect to cart to see the applied token
-                    wp_redirect(function_exists('wc_get_cart_url') ? wc_get_cart_url() : home_url());
-                    exit;
+                    // Ensure WooCommerce integration applies the token fees
+                    if (class_exists('\ProofOfGift\POG_WooCommerce_Integration')) {
+                        $token_handler = new \ProofOfGift\POG_Token_Handler(new \ProofOfGift\POG_Crypto());
+                        $wc_integration = new \ProofOfGift\POG_WooCommerce_Integration($token_handler);
+                        
+                        // Use the dedicated method for complete cart recalculation
+                        $wc_integration->force_cart_recalculation(WC()->cart);
+                        
+                        error_log('Proof Of Gift: Cart totals forcefully recalculated after URL token application');
+                    }
+                    
+                    // Do not redirect - let user continue shopping
+                    // Just stay on the current page with the success message displayed
                 } else {
                     if (function_exists('wc_add_notice')) {
                         wc_add_notice($result['message'], 'error');

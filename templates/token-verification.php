@@ -121,20 +121,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 <body <?php body_class(); ?>>
     <div class="pog-verification-container">
         <div class="pog-verification-header">
-            <h1><?php esc_html_e( 'Gift Token Verification', 'proof-of-gift' ); ?></h1>
-            <p><?php esc_html_e( 'Verify the details of your gift token below.', 'proof-of-gift' ); ?></p>
+            <?php $token_name_plural = \ProofOfGift\POG_Utils::get_token_name_plural(); ?>
+            <h1><?php echo sprintf( esc_html__( '%s Verification', 'proof-of-gift' ), $token_name_plural ); ?></h1>
+            <p><?php echo sprintf( esc_html__( 'Verify the details of your %s below.', 'proof-of-gift' ), strtolower($token_name_plural) ); ?></p>
         </div>
         
         <?php if ( false === $verification ) : ?>
             
             <div class="pog-status pog-status-invalid">
-                <strong><?php esc_html_e( 'Invalid Token', 'proof-of-gift' ); ?></strong>
-                <p><?php esc_html_e( 'The token you provided is not valid.', 'proof-of-gift' ); ?></p>
+                <strong><?php echo sprintf( esc_html__( 'Invalid %s', 'proof-of-gift' ), $token_name_plural ); ?></strong>
+                <p><?php echo sprintf( esc_html__( 'The %s you provided are not valid.', 'proof-of-gift' ), strtolower($token_name_plural) ); ?></p>
             </div>
             
             <div class="pog-token-details">
                 <div class="pog-token-row">
-                    <div class="pog-token-label"><?php esc_html_e( 'Token', 'proof-of-gift' ); ?></div>
+                    <div class="pog-token-label"><?php echo esc_html( $token_name_plural ); ?></div>
                     <div class="pog-token-value"><code><?php echo esc_html( $token ); ?></code></div>
                 </div>
             </div>
@@ -153,22 +154,44 @@ if ( ! defined( 'ABSPATH' ) ) {
                 <strong>
                     <?php
                     if ( $verification['valid'] ) {
-                        esc_html_e( 'Valid Token', 'proof-of-gift' );
+                        if (isset($_GET['pog_apply']) && $_GET['pog_apply'] == '1') {
+                            echo sprintf( esc_html__( '%s Applied!', 'proof-of-gift' ), $token_name_plural );
+                        } else {
+                            echo sprintf( esc_html__( 'Valid %s', 'proof-of-gift' ), $token_name_plural );
+                        }
                     } elseif ( $redeemed ) {
-                        esc_html_e( 'Redeemed Token', 'proof-of-gift' );
+                        echo sprintf( esc_html__( 'Redeemed %s', 'proof-of-gift' ), $token_name_plural );
                     } else {
-                        esc_html_e( 'Invalid Token', 'proof-of-gift' );
+                        echo sprintf( esc_html__( 'Invalid %s', 'proof-of-gift' ), $token_name_plural );
                     }
                     ?>
                 </strong>
                 <p>
                     <?php
                     if ( $verification['valid'] ) {
-                        esc_html_e( 'This token is valid and can be used for payment.', 'proof-of-gift' );
+                        if (isset($_GET['pog_apply']) && $_GET['pog_apply'] == '1') {
+                            echo sprintf(
+                                esc_html__( 'These %1$s for %2$s have been successfully applied to your cart! You can continue shopping or proceed to checkout when ready.', 'proof-of-gift' ),
+                                strtolower($token_name_plural),
+                                esc_html( $currency . $amount )
+                            );
+                        } else {
+                            echo sprintf(
+                                esc_html__( 'These %1$s are valid for %2$s and can be used for payment. You can apply them during checkout.', 'proof-of-gift' ),
+                                strtolower($token_name_plural),
+                                esc_html( $currency . $amount )
+                            );
+                        }
                     } elseif ( $redeemed ) {
-                        esc_html_e( 'This token has already been redeemed and cannot be used again.', 'proof-of-gift' );
+                        echo sprintf(
+                            esc_html__( 'These %s have already been redeemed and cannot be used again.', 'proof-of-gift' ),
+                            strtolower($token_name_plural)
+                        );
                     } else {
-                        esc_html_e( 'This token is not valid and cannot be used for payment.', 'proof-of-gift' );
+                        echo sprintf(
+                            esc_html__( 'These %s are not valid and cannot be used for payment.', 'proof-of-gift' ),
+                            strtolower($token_name_plural)
+                        );
                     }
                     ?>
                 </p>
@@ -176,7 +199,7 @@ if ( ! defined( 'ABSPATH' ) ) {
             
             <div class="pog-token-details">
                 <div class="pog-token-row">
-                    <div class="pog-token-label"><?php esc_html_e( 'Token', 'proof-of-gift' ); ?></div>
+                    <div class="pog-token-label"><?php echo esc_html( $token_name_plural ); ?></div>
                     <div class="pog-token-value"><code><?php echo esc_html( $token ); ?></code></div>
                 </div>
                 
@@ -232,25 +255,47 @@ if ( ! defined( 'ABSPATH' ) ) {
                 <?php endif; ?>
             </div>
             
-            <?php if ( $verification['valid'] ) : ?>
-                <div class="pog-actions">
-                    <?php if ( function_exists( 'wc_get_page_id' ) ) : ?>
-                        <a href="<?php echo esc_url( get_permalink( wc_get_page_id( 'checkout' ) ) ); ?>" class="pog-action-button">
-                            <?php esc_html_e( 'Apply at Checkout', 'proof-of-gift' ); ?>
+            <div class="pog-actions">
+                <?php if ( $verification['valid'] ) : ?>
+                    <?php
+                    // Check if we have the shop page
+                    $shop_page_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('shop') : '';
+                    if (empty($shop_page_url)) {
+                        $shop_page_url = home_url('/shop/');
+                    }
+                    ?>
+                    <a href="<?php echo esc_url($shop_page_url); ?>" class="pog-action-button">
+                        <?php esc_html_e('Continue Shopping', 'proof-of-gift'); ?>
+                    </a>
+                    
+                    <?php if (function_exists('wc_get_cart_url')) : ?>
+                        <a href="<?php echo esc_url(wc_get_cart_url()); ?>" class="pog-action-button pog-action-secondary">
+                            <?php esc_html_e('View Cart', 'proof-of-gift'); ?>
                         </a>
                     <?php endif; ?>
                     
-                    <a href="<?php echo esc_url( home_url() ); ?>" class="pog-action-button pog-action-secondary">
-                        <?php esc_html_e( 'Return to Home', 'proof-of-gift' ); ?>
+                    <?php if (function_exists('wc_get_checkout_url')) : ?>
+                        <a href="<?php echo esc_url(wc_get_checkout_url()); ?>" class="pog-action-button pog-action-secondary">
+                            <?php esc_html_e('Checkout', 'proof-of-gift'); ?>
+                        </a>
+                    <?php endif; ?>
+                <?php else : ?>
+                    <?php
+                    // Check if we have the shop page
+                    $shop_page_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('shop') : '';
+                    if (empty($shop_page_url)) {
+                        $shop_page_url = home_url('/shop/');
+                    }
+                    ?>
+                    <a href="<?php echo esc_url($shop_page_url); ?>" class="pog-action-button">
+                        <?php esc_html_e('Continue Shopping', 'proof-of-gift'); ?>
                     </a>
-                </div>
-            <?php else : ?>
-                <div class="pog-actions">
-                    <a href="<?php echo esc_url( home_url() ); ?>" class="pog-action-button">
-                        <?php esc_html_e( 'Return to Home', 'proof-of-gift' ); ?>
+                    
+                    <a href="<?php echo esc_url(home_url()); ?>" class="pog-action-button pog-action-secondary">
+                        <?php esc_html_e('Return to Home', 'proof-of-gift'); ?>
                     </a>
-                </div>
-            <?php endif; ?>
+                <?php endif; ?>
+            </div>
             
         <?php endif; ?>
     </div>

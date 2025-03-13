@@ -42,22 +42,26 @@
                         $('#pog-single-token-result').text(response.data.token);
                         $('.pog-token-result').show();
                         
-                        // Try using the application URL directly from the server response
-                        var application_url = '';
-                        
+                        // Get the application URL from response or create it if missing
+                        var application_url;
                         if (response.data.urls && response.data.urls.application) {
-                            // Use the URL from the server response
                             application_url = response.data.urls.application;
-                            console.log('Using server-provided application URL:', application_url);
+                            console.log('Using application URL from server:', application_url);
                         } else {
-                            // Fallback to generating URL locally
+                            // Fallback to creating the URL locally
                             var site_url = window.location.origin;
                             application_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token) + '&pog_apply=1';
-                            console.log('Locally generated application URL:', application_url);
+                            console.log('Generated application URL locally:', application_url);
                         }
                         
-                        // Update the URL input field with the application URL (forcing it as text)
-                        document.getElementById('pog-application-url').value = application_url;
+                        // Ensure the application URL is displayed immediately
+                        $('#pog-application-url').val(application_url);
+                        
+                        // Also ensure the value is set after a short delay to fix any rendering issues
+                        setTimeout(function() {
+                            document.getElementById('pog-application-url').value = application_url;
+                            console.log('URL field value refreshed:', document.getElementById('pog-application-url').value);
+                        }, 50);
                         
                         // Make sure the URL section is visible
                         $('#pog-token-url').show();
@@ -71,6 +75,20 @@
                                 var $button = $(e.trigger);
                                 var originalText = $button.text();
                                 $button.text('Copied!');
+                                
+                                // Log what was copied for debugging
+                                console.log('Copied to clipboard:', $(e.trigger.getAttribute('data-clipboard-target')).val() || e.text);
+                                
+                                setTimeout(function() {
+                                    $button.text(originalText);
+                                }, 1500);
+                            });
+                            
+                            copyButtons.on('error', function(e) {
+                                console.error('Clipboard error:', e);
+                                
+                                var $button = $(e.trigger);
+                                $button.text('Copy Failed!');
                                 setTimeout(function() {
                                     $button.text(originalText);
                                 }, 1500);
@@ -170,7 +188,7 @@
                         // Display the tokens.
                         var html = '';
                         var site_url = window.location.origin;
-                        response.data.tokens.forEach(function(token) {
+                        response.data.tokens.forEach(function(token, i) {
                             // Try to use the URL from the server response if available
                             var application_url = '';
                             
@@ -185,14 +203,52 @@
                             html += '<td>' + token.token + '</td>';
                             html += '<td>' + token.amount + '</td>';
                             html += '<td>';
-                            html += '<input type="text" readonly class="regular-text" value="' + application_url + '" style="width:60%;" onClick="this.select();" /> ';
-                            html += '<button type="button" class="button button-primary pog-copy-token" data-clipboard-text="' + application_url + '">Copy URL</button>';
+                            html += '<button type="button" class="button pog-copy-batch-token" data-clipboard-text="' + token.token + '">Copy Token</button> ';
+                            html += '<button type="button" class="button pog-copy-to-generator" data-token="' + token.token + '" onclick="copyTokenToGenerator(\'' + token.token + '\')">Generate URL</button>';
                             html += '</td>';
                             html += '</tr>';
                         });
 
                         $('#pog-batch-tokens-result').html(html);
                         $('.pog-batch-result').show();
+                        
+                        // Initialize clipboard for batch token buttons
+                        if (typeof ClipboardJS !== 'undefined') {
+                            new ClipboardJS('.pog-copy-batch-token').on('success', function(e) {
+                                var $button = $(e.trigger);
+                                var originalText = $button.text();
+                                $button.text('Copied!');
+                                setTimeout(function() {
+                                    $button.text(originalText);
+                                }, 1500);
+                            });
+                        }
+                        
+                        // Add handler for "Generate URL" buttons in the token batch list
+                        $('.pog-copy-to-generator').off('click').on('click', function() {
+                            var token = $(this).data('token');
+                            console.log('Generate URL clicked for token:', token);
+                            
+                            // Scroll to the URL generator section
+                            $('html, body').animate({
+                                scrollTop: $('.pog-token-url-generator').offset().top - 100
+                            }, 500);
+                            
+                            // Fill the token field - try direct DOM manipulation
+                            document.getElementById('pog-token-for-url').value = token;
+                            
+                            // Generate URLs directly without relying on the button click
+                            var site_url = window.location.origin;
+                            var application_url = site_url + '/?pog_token=' + encodeURIComponent(token) + '&pog_apply=1';
+                            var pretty_url = site_url + '/pog-apply/' + token;
+                            
+                            // Set URL values directly
+                            document.getElementById('pog-manual-application-url').value = application_url;
+                            document.getElementById('pog-manual-pretty-url').value = pretty_url;
+                            
+                            // Show the results
+                            $('#pog-url-result').show();
+                        });
                     } else {
                         alert(pog_admin_vars.strings.error + ': ' + response.data.message);
                     }
@@ -503,11 +559,11 @@
     }
 
     /**
-     * Initialize clipboard.js for copying tokens.
+     * Initialize clipboard.js for copying tokens and URLs.
      */
     function initializeClipboard() {
         if (typeof ClipboardJS !== 'undefined') {
-            var clipboard = new ClipboardJS('.pog-copy-token');
+            var clipboard = new ClipboardJS('.pog-copy-token, .pog-copy-url');
             
             clipboard.on('success', function(e) {
                 // Show a success message.
@@ -516,11 +572,26 @@
                 
                 $button.text('Copied!');
                 
+                // Log what was copied for debugging
+                console.log('Copied to clipboard:', $(e.trigger.getAttribute('data-clipboard-target')).val() || e.text);
+                
                 setTimeout(function() {
                     $button.text(originalText);
                 }, 1500);
                 
                 e.clearSelection();
+            });
+            
+            clipboard.on('error', function(e) {
+                console.error('Clipboard error:', e);
+                
+                var $button = $(e.trigger);
+                var originalText = $button.text();
+                $button.text('Copy Failed!');
+                
+                setTimeout(function() {
+                    $button.text(originalText);
+                }, 1500);
             });
         }
     }
@@ -533,6 +604,92 @@
     }
 
     /**
+     * Handle manual URL generation for existing tokens
+     */
+    function handleManualUrlGeneration() {
+        // Add handler for the "Use Example Token" button
+        $('#pog-use-example-token').on('click', function() {
+            // Example token provided by the user
+            var exampleToken = 'BtcPins-B7jJxYFKufoyEjU.gdElKA-AAAAZA-xQSxnZrRGZ5G35IBnWnBPBFAof0N7gtauxrTNshU3GgnMUAh9obMLkju_Pzl12jaYm1cR84kMbb9OKxe1rfeAA';
+            
+            // Set the token in the input field
+            document.getElementById('pog-token-for-url').value = exampleToken;
+            $('#pog-token-for-url').val(exampleToken);
+            
+            // Generate URLs directly
+            var site_url = window.location.origin;
+            var application_url = site_url + '/?pog_token=' + encodeURIComponent(exampleToken) + '&pog_apply=1';
+            var pretty_url = site_url + '/pog-apply/' + exampleToken;
+            
+            // Set URL values directly
+            document.getElementById('pog-manual-application-url').value = application_url;
+            document.getElementById('pog-manual-pretty-url').value = pretty_url;
+            
+            // Show the results
+            $('#pog-url-result').show();
+        });
+        
+        $('#pog-generate-url').on('click', function() {
+            var token = $('#pog-token-for-url').val().trim();
+            
+            if (!token) {
+                alert('Please enter a token.');
+                return;
+            }
+            
+            // Log the token for debugging
+            console.log('Generating URL for token:', token);
+            
+            // Generate the application URL
+            var site_url = window.location.origin;
+            var application_url = site_url + '/?pog_token=' + encodeURIComponent(token) + '&pog_apply=1';
+            
+            // Also create the pretty URL format (don't encode for pretty URL as it breaks the path)
+            var pretty_url = site_url + '/pog-apply/' + token;
+            
+            console.log('Generated URLs:', 
+                '\nStandard URL:', application_url, 
+                '\nPretty URL:', pretty_url
+            );
+            
+            // Display the URLs and ensure they are set
+            document.getElementById('pog-manual-application-url').value = application_url;
+            document.getElementById('pog-manual-pretty-url').value = pretty_url;
+            
+            // Also use jQuery as a backup
+            $('#pog-manual-application-url').val(application_url);
+            $('#pog-manual-pretty-url').val(pretty_url);
+            
+            $('#pog-url-result').show();
+            
+            // Initialize clipboard for these buttons
+            if (typeof ClipboardJS !== 'undefined') {
+                new ClipboardJS('.pog-copy-manual-url, .pog-copy-pretty-url').on('success', function(e) {
+                    var $button = $(e.trigger);
+                    var originalText = $button.text();
+                    $button.text('Copied!');
+                    
+                    // Log the copied text for debugging
+                    var copiedText = $(e.trigger.getAttribute('data-clipboard-target')).val();
+                    console.log('Copied to clipboard:', copiedText);
+                    
+                    setTimeout(function() {
+                        $button.text(originalText);
+                    }, 1500);
+                });
+            }
+        });
+        
+        // Also allow generating URL by pressing Enter in the token field
+        $('#pog-token-for-url').on('keypress', function(e) {
+            if (e.which === 13) { // Enter key
+                $('#pog-generate-url').click();
+                e.preventDefault();
+            }
+        });
+    }
+    
+    /**
      * Initialize all admin functionality.
      */
     function init() {
@@ -543,9 +700,54 @@
         handleBTCPayConnectionTest();
         initializeClipboard();
         handleExchangeRateRefresh();
+        handleManualUrlGeneration();
     }
 
     // Initialize when the DOM is ready.
-    $(document).ready(init);
+    $(document).ready(function() {
+        // TEST CODE - ADD ALERTS AND BASIC EVENT HANDLERS
+        console.log("*** ADMIN JS LOADED ***");
+        alert("Admin JS Loaded");
+        
+        // Direct DOM event handlers - bypassing jQuery
+        document.getElementById('pog-generate-url').addEventListener('click', function() {
+            console.log("Generate URL button clicked");
+            alert("Generate URL clicked!");
+            
+            var token = document.getElementById('pog-token-for-url').value.trim();
+            console.log("Token value:", token);
+            
+            // Generate URLs
+            var site_url = window.location.origin;
+            var application_url = site_url + '/?pog_token=' + encodeURIComponent(token) + '&pog_apply=1';
+            
+            // Display URLs
+            document.getElementById('pog-manual-application-url').value = application_url;
+            document.getElementById('pog-url-result').style.display = 'block';
+            
+            alert("URL generated: " + application_url);
+        });
+        
+        document.getElementById('pog-use-example-token').addEventListener('click', function() {
+            console.log("Use example token button clicked");
+            alert("Example token used!");
+            
+            // Example token
+            var token = 'BtcPins-B7jJxYFKufoyEjU.gdElKA-AAAAZA-xQSxnZrRGZ5G35IBnWnBPBFAof0N7gtauxrTNshU3GgnMUAh9obMLkju_Pzl12jaYm1cR84kMbb9OKxe1rfeAA';
+            
+            // Set the token
+            document.getElementById('pog-token-for-url').value = token;
+            
+            // Generate and display URL
+            var site_url = window.location.origin;
+            var application_url = site_url + '/?pog_token=' + encodeURIComponent(token) + '&pog_apply=1';
+            
+            document.getElementById('pog-manual-application-url').value = application_url;
+            document.getElementById('pog-url-result').style.display = 'block';
+        });
+        
+        // Initialize everything else
+        init();
+    });
 
 })(jQuery);

@@ -648,18 +648,84 @@ class POG_Admin {
                             <?php esc_html_e( 'Copy Token', 'proof-of-gift' ); ?>
                         </button>
                     </div>
+                    <p class="description" style="margin-top: 10px;">
+                        <?php esc_html_e('To create a customer application URL for this token, copy and paste it into the URL Generator below.', 'proof-of-gift'); ?>
+                    </p>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <!-- Token URL Generator Utility -->
+            <h2><?php esc_html_e( 'Token URL Generator', 'proof-of-gift' ); ?></h2>
+            <div class="pog-token-url-generator" style="margin-bottom: 30px; padding: 15px; background-color: #f9f9f9; border: 1px solid #ddd;">
+                <p><?php esc_html_e('Paste an existing token to generate application URLs:', 'proof-of-gift'); ?></p>
+                <div style="margin: 10px 0;">
+                    <label for="pog-token-for-url"><?php esc_html_e('Token:', 'proof-of-gift'); ?></label>
+                    <input type="text" id="pog-token-for-url" class="regular-text" style="width: 100%;" placeholder="<?php esc_attr_e('Paste token here...', 'proof-of-gift'); ?>" />
+                </div>
+                <div style="margin: 10px 0; display: flex; align-items: center; gap: 10px;">
+                    <button type="button" class="button button-primary" id="pog-generate-url" onclick="generateTokenUrl()">
+                        <?php esc_html_e('Generate URL', 'proof-of-gift'); ?>
+                    </button>
+                    <button type="button" class="button" id="pog-use-example-token" onclick="useExampleToken()">
+                        <?php esc_html_e('Use Example Token', 'proof-of-gift'); ?>
+                    </button>
+                </div>
+                
+                <!-- INLINE JAVASCRIPT FOR GUARANTEED FUNCTIONALITY -->
+                <script type="text/javascript">
+                function generateTokenUrl() {
+                    var token = document.getElementById('pog-token-for-url').value.trim();
+                    if (!token) {
+                        alert('Please enter a token');
+                        return;
+                    }
                     
-                    <div id="pog-token-url" style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border: 1px solid #ddd;">
-                        <h4><?php esc_html_e( 'Customer URL', 'proof-of-gift' ); ?></h4>
-                        <p><?php esc_html_e('Share this URL with customers to redeem the gift token:', 'proof-of-gift'); ?></p>
-                        <div style="margin: 10px 0; display: flex; align-items: center;">
-                            <input type="text" id="pog-application-url" readonly style="width: 100%; margin-right: 10px;" onClick="this.select();" />
-                            <button type="button" class="button button-primary pog-copy-url" data-clipboard-target="#pog-application-url">
-                                <?php esc_html_e( 'Copy URL', 'proof-of-gift' ); ?>
-                            </button>
-                        </div>
-                        <p class="description"><?php esc_html_e('When a customer visits this URL, the token will be automatically applied to their cart.', 'proof-of-gift'); ?></p>
+                    var site_url = window.location.origin;
+                    var application_url = site_url + '/?pog_token=' + encodeURIComponent(token) + '&pog_apply=1';
+                    
+                    document.getElementById('pog-manual-application-url').value = application_url;
+                    document.getElementById('pog-url-result').style.display = 'block';
+                }
+                
+                function useExampleToken() {
+                    var token = 'BtcPins-B7jJxYFKufoyEjU.gdElKA-AAAAZA-xQSxnZrRGZ5G35IBnWnBPBFAof0N7gtauxrTNshU3GgnMUAh9obMLkju_Pzl12jaYm1cR84kMbb9OKxe1rfeAA';
+                    document.getElementById('pog-token-for-url').value = token;
+                    generateTokenUrl();
+                }
+                </script>
+                <div id="pog-url-result" style="display:none; margin-top: 15px;">
+                    <h4><?php esc_html_e('Customer Application URL:', 'proof-of-gift'); ?></h4>
+                    
+                    <div style="margin: 10px 0; display: flex; align-items: center;">
+                        <input type="text" id="pog-manual-application-url" readonly class="regular-text" style="width: 100%; margin-right: 10px;" onClick="this.select();" />
+                        <button type="button" class="button button-primary" onclick="copyApplicationUrl()">
+                            <?php esc_html_e('Copy URL', 'proof-of-gift'); ?>
+                        </button>
                     </div>
+                    
+                    <p class="description"><?php esc_html_e('When a customer visits this URL, the token will be automatically applied to their cart.', 'proof-of-gift'); ?></p>
+                    
+                    <script>
+                    function copyApplicationUrl() {
+                        var copyText = document.getElementById("pog-manual-application-url");
+                        copyText.select();
+                        copyText.setSelectionRange(0, 99999); // For mobile devices
+                        
+                        // Copy the text
+                        document.execCommand("copy");
+                        
+                        // Visual feedback
+                        var btn = event.target;
+                        var originalText = btn.textContent;
+                        btn.textContent = "Copied!";
+                        
+                        setTimeout(function() {
+                            btn.textContent = originalText;
+                        }, 1500);
+                    }
+                    </script>
                 </div>
             </div>
             
@@ -699,12 +765,107 @@ class POG_Admin {
                                 <tr>
                                     <th><?php esc_html_e( 'Token', 'proof-of-gift' ); ?></th>
                                     <th><?php esc_html_e( 'Amount', 'proof-of-gift' ); ?></th>
-                                    <th><?php esc_html_e( 'Customer URL', 'proof-of-gift' ); ?></th>
+                                    <th><?php esc_html_e( 'Actions', 'proof-of-gift' ); ?></th>
                                 </tr>
                             </thead>
                             <tbody id="pog-batch-tokens-result"></tbody>
                         </table>
-                        <p class="description"><?php esc_html_e('Customer URLs automatically apply tokens when visited.', 'proof-of-gift'); ?></p>
+                        <p class="description"><?php esc_html_e('To create a customer application URL for any token, copy and paste it into the URL Generator above.', 'proof-of-gift'); ?></p>
+                        
+                        <!-- INLINE JAVASCRIPT FOR BATCH TOKENS -->
+                        <script type="text/javascript">
+                        function copyTokenToGenerator(token) {
+                            document.getElementById('pog-token-for-url').value = token;
+                            
+                            // Scroll to generator
+                            document.querySelector('.pog-token-url-generator').scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center'
+                            });
+                            
+                            // Generate URL
+                            if (typeof generateTokenUrl === 'function') {
+                                generateTokenUrl();
+                            } else {
+                                // Fallback if the function isn't available yet
+                                var site_url = window.location.origin;
+                                var application_url = site_url + '/?pog_token=' + encodeURIComponent(token) + '&pog_apply=1';
+                                
+                                document.getElementById('pog-manual-application-url').value = application_url;
+                                document.getElementById('pog-url-result').style.display = 'block';
+                            }
+                        }
+                        
+                        function copyTokenDirectly(token) {
+                            // Create temporary input element
+                            var tempInput = document.createElement("input");
+                            tempInput.value = token;
+                            document.body.appendChild(tempInput);
+                            
+                            // Select and copy
+                            tempInput.select();
+                            document.execCommand("copy");
+                            
+                            // Remove the temporary element
+                            document.body.removeChild(tempInput);
+                            
+                            // Visual feedback
+                            var btn = event.target;
+                            var originalText = btn.textContent;
+                            btn.textContent = "Copied!";
+                            
+                            setTimeout(function() {
+                                btn.textContent = originalText;
+                            }, 1500);
+                        }
+                        
+                        // Intercept the batch token HTML generation
+                        var originalAjax = jQuery.ajax;
+                        jQuery.ajax = function(settings) {
+                            var originalSuccess = settings.success;
+                            
+                            if (settings.data && typeof settings.data === 'string' && 
+                                settings.data.indexOf('action=pog_generate_tokens_batch') > -1) {
+                                
+                                settings.success = function(response) {
+                                    if (response.success && response.data && response.data.tokens) {
+                                        // Build our own HTML with direct action buttons
+                                        var html = '';
+                                        for (var i = 0; i < response.data.tokens.length; i++) {
+                                            var token = response.data.tokens[i];
+                                            html += '<tr>';
+                                            html += '<td>' + token.token + '</td>';
+                                            html += '<td>' + token.amount + '</td>';
+                                            html += '<td>';
+                                            html += '<button type="button" class="button" onclick="copyTokenDirectly(\'' + token.token + '\')">Copy Token</button> ';
+                                            html += '<button type="button" class="button" onclick="copyTokenToGenerator(\'' + token.token + '\')">Generate URL</button>';
+                                            html += '</td>';
+                                            html += '</tr>';
+                                        }
+                                        
+                                        // Run original success handler
+                                        if (originalSuccess) {
+                                            originalSuccess(response);
+                                        }
+                                        
+                                        // Override the HTML after the original handler
+                                        setTimeout(function() {
+                                            document.getElementById('pog-batch-tokens-result').innerHTML = html;
+                                        }, 10);
+                                        
+                                        return;
+                                    }
+                                    
+                                    // Fall back to original handler for errors
+                                    if (originalSuccess) {
+                                        originalSuccess(response);
+                                    }
+                                };
+                            }
+                            
+                            return originalAjax.call(this, settings);
+                        };
+                        </script>
                     </div>
                     
                     <p>

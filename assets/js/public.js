@@ -70,8 +70,16 @@
                     $messageContainer.html(successMsg).show();
                     
                     // Automatically reload the page to apply the token to totals
+                    // We need to force a clean reload with cart recalculation
                     setTimeout(function() {
-                        window.location.reload();
+                        // Add a timestamp parameter to prevent caching
+                        var reloadUrl = window.location.href;
+                        if (reloadUrl.indexOf('?') !== -1) {
+                            reloadUrl += '&pog_refresh=' + Date.now();
+                        } else {
+                            reloadUrl += '?pog_refresh=' + Date.now();
+                        }
+                        window.location.href = reloadUrl;
                     }, 1000);
                 } else {
                     $messageContainer.html('<div class="pog-token-error">' + response.data.message + '</div>').show();
@@ -126,7 +134,14 @@
                         $messageContainer.html('<div class="pog-token-success">' + response.data.message + ' - Updating cart...</div>').show();
                         
                         // Force page reload to properly update cart
-                        window.location.reload();
+                        // Add a timestamp parameter to prevent caching
+                        var reloadUrl = window.location.href;
+                        if (reloadUrl.indexOf('?') !== -1) {
+                            reloadUrl += '&pog_refresh=' + Date.now();
+                        } else {
+                            reloadUrl += '?pog_refresh=' + Date.now();
+                        }
+                        window.location.href = reloadUrl;
                     } else {
                         $removeBtn.prop('disabled', false).text('Remove');
                         $messageContainer.html('<div class="pog-token-error">' + response.data.message + '</div>').show();
