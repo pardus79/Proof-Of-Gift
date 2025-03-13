@@ -648,6 +648,13 @@ class POG_Admin {
                             <?php esc_html_e( 'Copy', 'proof-of-gift' ); ?>
                         </button>
                     </div>
+                    <div id="pog-token-urls">
+                        <h4><?php esc_html_e( 'Token URLs', 'proof-of-gift' ); ?></h4>
+                        <p><strong><?php esc_html_e( 'Verification URL', 'proof-of-gift' ); ?>:</strong></p>
+                        <div id="pog-verification-url"></div>
+                        <p><strong><?php esc_html_e( 'Application URL', 'proof-of-gift' ); ?>:</strong></p>
+                        <div id="pog-application-url"></div>
+                    </div>
                 </div>
             </div>
             
@@ -750,6 +757,24 @@ class POG_Admin {
                 </button>
                 
                 <div id="pog-verify-result" style="display:none;"></div>
+                
+                <!-- Token Verification Results Template -->
+                <div id="pog-verification-template" style="display:none;">
+                    <div class="pog-verify-details" style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border: 1px solid #ddd;">
+                        <h3 id="pog-verify-status"></h3>
+                        <div id="pog-verify-info"></div>
+                        
+                        <div id="pog-verify-urls" style="margin-top: 15px;">
+                            <h4><?php esc_html_e('Token URLs', 'proof-of-gift'); ?></h4>
+                            
+                            <p><strong><?php esc_html_e('Verification URL', 'proof-of-gift'); ?>:</strong></p>
+                            <div id="pog-verify-url-verification"></div>
+                            
+                            <p><strong><?php esc_html_e('Application URL', 'proof-of-gift'); ?>:</strong></p>
+                            <div id="pog-verify-url-application"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <?php

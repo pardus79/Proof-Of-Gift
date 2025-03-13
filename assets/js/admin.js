@@ -42,8 +42,7 @@
                         $('#pog-single-token-result').text(response.data.token);
                         $('.pog-token-result').show();
                         
-                        // Display verification and application URLs (always refresh)
-                        $('#pog-single-token-urls').remove(); // Remove any existing URL div
+                        // Generate the URLs using query parameters
                         var site_url = window.location.origin;
                         var verification_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token);
                         var application_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token) + '&pog_apply=1';
@@ -52,18 +51,23 @@
                             '\nVerification URL:', verification_url,
                             '\nApplication URL:', application_url);
                         
-                        var urlsHtml = '<div id="pog-single-token-urls">' +
-                            '<p><strong>Verification URL:</strong><br>' +
+                        // Update the URL display containers with HTML that includes copy buttons
+                        $('#pog-verification-url').html(
                             '<code>' + verification_url + '</code>' +
-                            '<button type="button" class="button pog-copy-token" data-clipboard-text="' + verification_url + '">Copy</button></p>' +
-                            '<p><strong>Application URL:</strong><br>' + 
-                            '<code>' + application_url + '</code>' +
-                            '<button type="button" class="button pog-copy-token" data-clipboard-text="' + application_url + '">Copy</button>' +
-                            '<small> (Automatically applies token when visited)</small></p>' +
-                        '</div>';
+                            '<button type="button" class="button pog-copy-token" data-clipboard-text="' + 
+                            verification_url + '">Copy</button>'
+                        );
                         
-                        $('.pog-token-result').append(urlsHtml);
-                        console.log('Added URL HTML to DOM');
+                        $('#pog-application-url').html(
+                            '<code>' + application_url + '</code>' +
+                            '<button type="button" class="button pog-copy-token" data-clipboard-text="' + 
+                            application_url + '">Copy</button>' +
+                            '<small> (Automatically applies token when visited)</small>'
+                        );
+                        
+                        // Make sure the URL section is visible
+                        $('#pog-token-urls').show();
+                        console.log('Updated URL containers in DOM');
                     } else {
                         alert(pog_admin_vars.strings.error + ': ' + response.data.message);
                     }
@@ -302,87 +306,99 @@
                 success: function(response) {
                     // Reset button state.
                     $('#pog-verify-token-btn').prop('disabled', false).text('Verify Token');
+                    console.log('Token verification response:', response);
 
                     if (response.success) {
-                        // Build the verification result HTML.
-                        var html = '<div class="pog-verify-result">';
-                        html += '<h3>' + (response.data.valid ? 'Valid Token' : 'Invalid Token') + '</h3>';
+                        // Show the token data
+                        var infoHtml = '';
                         
-                        html += '<div class="pog-verify-details">';
-                        html += '<p><strong>Token:</strong> ' + response.data.token + '</p>';
-                        html += '<p><strong>Amount:</strong> ';
+                        // Clone the template
+                        var template = $('#pog-verification-template').clone().attr('id', 'pog-verification-result');
+                        template.find('#pog-verify-status').text(response.data.valid ? 'Valid Token' : 'Invalid Token');
+                        
+                        // Build the basic info HTML
+                        infoHtml += '<p><strong>Token:</strong> ' + response.data.token + '</p>';
+                        infoHtml += '<p><strong>Amount:</strong> ';
                         
                         if (response.data.mode === 'direct_satoshi') {
-                            html += response.data.amount + ' satoshis';
+                            infoHtml += response.data.amount + ' satoshis';
                         } else if (response.data.mode === 'satoshi_conversion') {
-                            html += response.data.amount + ' satoshis (' + pog_admin_vars.symbol + response.data.store_currency_amount + ')';
+                            infoHtml += response.data.amount + ' satoshis (' + pog_admin_vars.symbol + response.data.store_currency_amount + ')';
                         } else {
-                            html += pog_admin_vars.symbol + response.data.amount;
+                            infoHtml += pog_admin_vars.symbol + response.data.amount;
                         }
-                        
-                        html += '</p>';
+                        infoHtml += '</p>';
                         
                         if (response.data.redeemed) {
-                            html += '<p><strong>Status:</strong> Redeemed</p>';
+                            infoHtml += '<p><strong>Status:</strong> Redeemed</p>';
                             
                             if (response.data.redeemed_at) {
-                                html += '<p><strong>Redeemed At:</strong> ' + response.data.redeemed_at + '</p>';
+                                infoHtml += '<p><strong>Redeemed At:</strong> ' + response.data.redeemed_at + '</p>';
                             }
                             
                             if (response.data.order_id) {
-                                html += '<p><strong>Order:</strong> ';
+                                infoHtml += '<p><strong>Order:</strong> ';
                                 
                                 if (response.data.order_number) {
-                                    html += '#' + response.data.order_number;
+                                    infoHtml += '#' + response.data.order_number;
                                     
                                     if (response.data.order_status) {
-                                        html += ' (' + response.data.order_status + ')';
+                                        infoHtml += ' (' + response.data.order_status + ')';
                                     }
                                 } else {
-                                    html += response.data.order_id;
+                                    infoHtml += response.data.order_id;
                                 }
                                 
-                                html += '</p>';
+                                infoHtml += '</p>';
                             }
-                        } else {
-                            html += '<p><strong>Status:</strong> ' + (response.data.valid ? 'Valid' : 'Invalid') + '</p>';
                             
-                            // Add URLs for valid tokens
+                            // Hide URLs for redeemed tokens
+                            template.find('#pog-verify-urls').hide();
+                        } else {
+                            infoHtml += '<p><strong>Status:</strong> ' + (response.data.valid ? 'Valid' : 'Invalid') + '</p>';
+                            
+                            // Show URLs for valid tokens only
                             if (response.data.valid) {
-                                html += '<div class="pog-token-urls">';
-                                html += '<h4>Token URLs</h4>';
-                                
-                                // Create readable verification and application URLs with query params
+                                // Create URLs
                                 var site_url = window.location.origin;
                                 var verification_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token);
                                 var application_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token) + '&pog_apply=1';
                                 
-                                console.log('Token verification success response:', response.data);
                                 console.log('Creating verification URLs:',
                                     '\nVerification URL:', verification_url,
                                     '\nApplication URL:', application_url);
                                 
-                                // Verification URL
-                                html += '<p><strong>Verification URL:</strong><br>';
-                                html += '<input type="text" readonly class="widefat" value="' + verification_url + '" onClick="this.select();" />';
-                                html += '<button type="button" class="button pog-copy-token" data-clipboard-text="' + verification_url + '">Copy</button>';
-                                html += '</p>';
+                                // Populate URL fields
+                                template.find('#pog-verify-url-verification').html(
+                                    '<code>' + verification_url + '</code>' +
+                                    '<button type="button" class="button pog-copy-token" data-clipboard-text="' + 
+                                    verification_url + '">Copy</button>'
+                                );
                                 
-                                // Application URL
-                                html += '<p><strong>Application URL:</strong><br>';
-                                html += '<input type="text" readonly class="widefat" value="' + application_url + '" onClick="this.select();" />';
-                                html += '<button type="button" class="button pog-copy-token" data-clipboard-text="' + application_url + '">Copy</button>';
-                                html += '<span class="description">(Automatically applies token when visited)</span>';
-                                html += '</p>';
+                                template.find('#pog-verify-url-application').html(
+                                    '<code>' + application_url + '</code>' +
+                                    '<button type="button" class="button pog-copy-token" data-clipboard-text="' + 
+                                    application_url + '">Copy</button>' +
+                                    '<small> (Automatically applies token when visited)</small>'
+                                );
                                 
-                                html += '</div>';
+                                // Show the URL section
+                                template.find('#pog-verify-urls').show();
+                            } else {
+                                // Hide URLs for invalid tokens
+                                template.find('#pog-verify-urls').hide();
                             }
                         }
                         
-                        html += '</div>';
-                        html += '</div>';
+                        // Set the info HTML and show the template
+                        template.find('#pog-verify-info').html(infoHtml);
+                        template.show();
                         
-                        $('#pog-verify-result').html(html).show();
+                        // Replace the result container with our filled template
+                        $('#pog-verify-result').html(template.html()).show();
+                        
+                        // Make sure clipboard works for new buttons
+                        initializeClipboard();
                     } else {
                         $('#pog-verify-result').html('<div class="pog-verify-error">' + response.data.message + '</div>').show();
                     }
