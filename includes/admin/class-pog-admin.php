@@ -848,9 +848,9 @@ class POG_Admin {
             // Generate the token.
             $token = $this->token_handler->create_token( $amount );
             
-            // Generate verification and application URLs
-            $verification_url = home_url( 'pog-verify/' . $token );
-            $application_url = home_url( 'pog-apply/' . $token );
+            // Generate verification and application URLs using query parameters
+            $verification_url = home_url( '?pog_token=' . urlencode($token) );
+            $application_url = home_url( '?pog_token=' . urlencode($token) . '&pog_apply=1' );
             
             // Return the token with URLs.
             wp_send_json_success( array(
@@ -902,9 +902,9 @@ class POG_Admin {
                 $batch_tokens = $this->token_handler->create_tokens_batch( $amount, $quantity );
                 
                 foreach ( $batch_tokens as $token ) {
-                    // Generate verification and application URLs
-                    $verification_url = home_url( 'pog-verify/' . $token );
-                    $application_url = home_url( 'pog-apply/' . $token );
+                    // Generate verification and application URLs using query parameters
+                    $verification_url = home_url( '?pog_token=' . urlencode($token) );
+                    $application_url = home_url( '?pog_token=' . urlencode($token) . '&pog_apply=1' );
                     
                     $tokens[] = array(
                         'token'  => $token,
@@ -1262,9 +1262,9 @@ class POG_Admin {
         // Get the operational mode.
         $mode = $this->token_handler->get_operational_mode();
         
-        // Generate verification and application URLs
-        $verification_url = home_url( 'pog-verify/' . $token );
-        $application_url = home_url( 'pog-apply/' . $token );
+        // Generate verification and application URLs using query parameters
+        $verification_url = home_url( '?pog_token=' . urlencode($token) );
+        $application_url = home_url( '?pog_token=' . urlencode($token) . '&pog_apply=1' );
         
         // Prepare the response based on the operational mode.
         $response = array(

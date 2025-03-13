@@ -40,24 +40,23 @@
                         $('#pog-single-token-result').text(response.data.token);
                         $('.pog-token-result').show();
                         
-                        // Display verification and application URLs
-                        if (!$('#pog-single-token-urls').length) {
-                            var site_url = window.location.origin;
-                            var verification_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token);
-                            var application_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token) + '&pog_apply=1';
-                            
-                            var urlsHtml = '<div id="pog-single-token-urls">' +
-                                '<p><strong>Verification URL:</strong><br>' +
-                                '<code>' + verification_url + '</code>' +
-                                '<button type="button" class="button pog-copy-token" data-clipboard-text="' + verification_url + '">Copy</button></p>' +
-                                '<p><strong>Application URL:</strong><br>' + 
-                                '<code>' + application_url + '</code>' +
-                                '<button type="button" class="button pog-copy-token" data-clipboard-text="' + application_url + '">Copy</button>' +
-                                '<small> (Automatically applies token when visited)</small></p>' +
-                            '</div>';
-                            
-                            $('.pog-token-result').append(urlsHtml);
-                        }
+                        // Display verification and application URLs (always refresh)
+                        $('#pog-single-token-urls').remove(); // Remove any existing URL div
+                        var site_url = window.location.origin;
+                        var verification_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token);
+                        var application_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token) + '&pog_apply=1';
+                        
+                        var urlsHtml = '<div id="pog-single-token-urls">' +
+                            '<p><strong>Verification URL:</strong><br>' +
+                            '<code>' + verification_url + '</code>' +
+                            '<button type="button" class="button pog-copy-token" data-clipboard-text="' + verification_url + '">Copy</button></p>' +
+                            '<p><strong>Application URL:</strong><br>' + 
+                            '<code>' + application_url + '</code>' +
+                            '<button type="button" class="button pog-copy-token" data-clipboard-text="' + application_url + '">Copy</button>' +
+                            '<small> (Automatically applies token when visited)</small></p>' +
+                        '</div>';
+                        
+                        $('.pog-token-result').append(urlsHtml);
                     } else {
                         alert(pog_admin_vars.strings.error + ': ' + response.data.message);
                     }
@@ -342,7 +341,7 @@
                             html += '<p><strong>Status:</strong> ' + (response.data.valid ? 'Valid' : 'Invalid') + '</p>';
                             
                             // Add URLs for valid tokens
-                            if (response.data.valid && response.data.urls) {
+                            if (response.data.valid) {
                                 html += '<div class="pog-token-urls">';
                                 html += '<h4>Token URLs</h4>';
                                 
