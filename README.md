@@ -14,9 +14,9 @@ Proof Of Gift is a powerful gift certificate solution for WordPress and WooComme
   - Satoshi Conversion Mode: tokens denominated in Satoshis, converted to store currency
 - **Token Management**:
   - Generate single tokens or batch generate multiple tokens
-  - CSV export of generated tokens with URLs for easy redemption
-  - Public token verification without redemption
-  - QR code support for easy token application
+  - CSV export of generated tokens with application URLs
+  - Built-in token verification system
+  - Copy-paste ready token URLs for easy distribution
 - **Shopping Integration**:
   - Apply tokens via URL or checkout form
   - Multiple tokens per order
@@ -32,7 +32,7 @@ Proof Of Gift implements a gift certificate system with properties similar to Ch
 3. **Independent Verification**: Tokens can be verified without a database lookup using the public key
 4. **Double-Spend Prevention**: A redemption database tracks spent tokens to prevent double-spending
 5. **Change Generation**: When a token is not fully spent, the system automatically creates a new token for the remaining value
-6. **URL-Based Application**: Tokens can be applied via URL for easy QR code integration
+6. **URL-Based Application**: Tokens can be applied via URL for easy sharing and distribution
 
 ## Requirements
 
@@ -74,7 +74,7 @@ Tokens can be applied in multiple ways:
 1. **URL Application**:
    - Share a token application URL: `https://your-site.com/pog-apply/TOKEN_CODE`
    - OR use a query parameter: `https://your-site.com/any-page?pog_token=TOKEN_CODE`
-   - Generate QR codes linking to these URLs for physical gift cards
+   - Use these URLs for sharing tokens via email, messages, or creating custom QR codes
 
 2. **Checkout Form**:
    - Customers enter the token code in the designated field during checkout
