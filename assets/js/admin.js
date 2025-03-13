@@ -42,28 +42,40 @@
                         $('#pog-single-token-result').text(response.data.token);
                         $('.pog-token-result').show();
                         
-                        // Generate the customer URL using query parameters
-                        var site_url = window.location.origin;
-                        var application_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token) + '&pog_apply=1';
+                        // Try using the application URL directly from the server response
+                        var application_url = '';
                         
-                        console.log('Creating customer application URL:', application_url);
+                        if (response.data.urls && response.data.urls.application) {
+                            // Use the URL from the server response
+                            application_url = response.data.urls.application;
+                            console.log('Using server-provided application URL:', application_url);
+                        } else {
+                            // Fallback to generating URL locally
+                            var site_url = window.location.origin;
+                            application_url = site_url + '/?pog_token=' + encodeURIComponent(response.data.token) + '&pog_apply=1';
+                            console.log('Locally generated application URL:', application_url);
+                        }
                         
-                        // Update the URL input field with the application URL
-                        $('#pog-application-url').val(application_url);
+                        // Update the URL input field with the application URL (forcing it as text)
+                        document.getElementById('pog-application-url').value = application_url;
                         
                         // Make sure the URL section is visible
                         $('#pog-token-url').show();
                         
-                        // Re-initialize clipboard for the copy URL button
-                        var urlClipboard = new ClipboardJS('.pog-copy-url');
-                        urlClipboard.on('success', function(e) {
-                            var $button = $(e.trigger);
-                            var originalText = $button.text();
-                            $button.text('Copied!');
-                            setTimeout(function() {
-                                $button.text(originalText);
-                            }, 1500);
-                        });
+                        // Make sure all clipboard buttons are initialized
+                        if (typeof ClipboardJS !== 'undefined') {
+                            // Initialize all clipboard buttons in one go
+                            var copyButtons = new ClipboardJS('.pog-copy-token, .pog-copy-url');
+                            
+                            copyButtons.on('success', function(e) {
+                                var $button = $(e.trigger);
+                                var originalText = $button.text();
+                                $button.text('Copied!');
+                                setTimeout(function() {
+                                    $button.text(originalText);
+                                }, 1500);
+                            });
+                        }
                         console.log('Updated URL containers in DOM');
                     } else {
                         alert(pog_admin_vars.strings.error + ': ' + response.data.message);
@@ -159,8 +171,15 @@
                         var html = '';
                         var site_url = window.location.origin;
                         response.data.tokens.forEach(function(token) {
-                            var verification_url = site_url + '/?pog_token=' + encodeURIComponent(token.token);
-                            var application_url = site_url + '/?pog_token=' + encodeURIComponent(token.token) + '&pog_apply=1';
+                            // Try to use the URL from the server response if available
+                            var application_url = '';
+                            
+                            if (token.urls && token.urls.application) {
+                                application_url = token.urls.application;
+                            } else {
+                                // Fallback to generating URL locally
+                                application_url = site_url + '/?pog_token=' + encodeURIComponent(token.token) + '&pog_apply=1';
+                            }
                             
                             html += '<tr>';
                             html += '<td>' + token.token + '</td>';
